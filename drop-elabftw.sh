@@ -31,7 +31,8 @@ DEBIAN_FRONTEND=noninteractive apt-get -y install \
     git \
     software-properties-common >> $logfile 2>&1
 
-# we need the latest version of mariadb (or mysql 5.6)
+# we used to need the latest version of mariadb (or mysql 5.6)
+# not anymore, but I leave it here because it harms no one to use recent software.
 echo "[*] Installing mariadb version 10.0 (SQL server)"
 apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db >> $logfile 2>&1
 add-apt-repository 'deb http://nwps.ws/pub/mariadb/repo/10.0/ubuntu trusty main' >> $logfile 2>&1
@@ -89,7 +90,6 @@ echo "create database elabftw;" | mysql -u root -p$rootpass
 pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 echo "grant usage on *.* to elabftw@localhost identified by '$pass';" | mysql -u root -p$rootpass
 echo "grant all privileges on elabftw.* to elabftw@localhost;" | mysql -u root -p$rootpass
-mysql -u root -p$rootpass elabftw < /elabftw/install/elabftw.sql
 
 ip=$(curl -s http://ifconfig.me)
 echo "Congratulations! eLabFTW is now running :)\n
