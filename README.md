@@ -1,6 +1,6 @@
 # drop-elabftw
 
-Get eLabFTW installed and running in no time on a drop !
+Get [eLabFTW](http://www.elabftw.net) installed and running in no time on a drop !
 
 The following actions will be performed :
 
