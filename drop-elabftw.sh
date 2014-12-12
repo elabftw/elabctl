@@ -63,7 +63,7 @@ wget -qO /etc/ssl/certs/server.crt https://raw.githubusercontent.com/NicolasCARP
 
 echo "[*] Installing elabftw in /elabftw"
 # elabftw
-git clone --depth 1 -b next https://github.com/NicolasCARPi/elabftw.git /elabftw >> $logfile 2>&1
+git clone --depth 1 -b master https://github.com/NicolasCARPi/elabftw.git /elabftw >> $logfile 2>&1
 # fix permissions
 chown -R www-data:www-data /elabftw
 
@@ -91,13 +91,13 @@ pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 echo "grant usage on *.* to elabftw@localhost identified by '$pass';" | mysql -u root -p$rootpass
 echo "grant all privileges on elabftw.* to elabftw@localhost;" | mysql -u root -p$rootpass
 
-ip=$(curl -s http://ifconfig.me)
+ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
 echo "Congratulations! eLabFTW is now running :)\n
 ====> Go to https://$ip/install now ! <====\n
-MySQL hostname : localhost\n
-MySQL Database : elabftw\n
-MySQL login : elabftw\n
-MySQL password : $pass\n
+Host for mysql database : localhost\n
+Name of the database : elabftw\n
+Username to connect to MySQL server : elabftw\n
+Password : $pass\n
 ====> Go to https://$ip/install now ! <====\n
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 echo "\n\n\nPassword for MySQL user 'elabftw' : $pass" >> $logfile

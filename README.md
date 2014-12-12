@@ -15,7 +15,11 @@ The following actions will be performed :
 
 * Create a droplet with Ubuntu 14.04 x64
 
-* SSH to your droplet (the root password is in your mailbox)
+* Open a terminal and SSH to your droplet (the root password is in your mailbox)
+
+~~~
+ssh root@12.34.56.78
+~~~
 
 * Go inside a tmux session
 
