@@ -6,7 +6,7 @@ The following actions will be performed :
 
 - install of nginx (web server)
 - install of  mariadb (sql server)
-- install of elabftw.
+- install of elabftw
 - get everything up and running
 
 # How to use
