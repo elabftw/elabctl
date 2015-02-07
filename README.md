@@ -17,7 +17,9 @@ The following actions will be performed :
 
 * Create a droplet with Ubuntu 14.04 x64 (works also with 14.10)
 
-* Open a terminal and SSH to your droplet (the root password is in your mailbox)
+* Open a terminal and SSH to your droplet. The IP address can be found in the digitalocean website.
+
+The root password is in your mailbox. It will not echo when you type it, it's normal, don't panic.
 
 ~~~
 ssh root@12.34.56.78
