@@ -15,7 +15,7 @@ The following actions will be performed :
 
 * Create an account on [DigitalOcean](https://cloud.digitalocean.com/registrations/new)
 
-* Create a droplet with Ubuntu 14.04 x64 (works also with 14.10)
+* Create a droplet with Ubuntu 14.04 x64 (works also with 14.10, but not with 12.04.5)
 
 * Open a terminal and SSH to your droplet (the root password is in your mailbox)
 
