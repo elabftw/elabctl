@@ -56,14 +56,14 @@ sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php5/fpm/php-fpm.conf
 sed -i -e "s/;catch_workers_output\s*=\s*yes/catch_workers_output = yes/g" /etc/php5/fpm/pool.d/www.conf
 
 # nginx site conf
-wget -qO /etc/nginx/sites-available/default https://raw.githubusercontent.com/NicolasCARPi/drop-elabftw/master/nginx-site.conf
+wget -qO /etc/nginx/sites-available/default https://raw.githubusercontent.com/elabftw/drop-elabftw/master/nginx-site.conf
 # ssl key + cert
-wget -qO /etc/ssl/certs/server.key https://raw.githubusercontent.com/NicolasCARPi/drop-elabftw/master/server.key
-wget -qO /etc/ssl/certs/server.crt https://raw.githubusercontent.com/NicolasCARPi/drop-elabftw/master/server.crt
+wget -qO /etc/ssl/certs/server.key https://raw.githubusercontent.com/elabftw/drop-elabftw/master/server.key
+wget -qO /etc/ssl/certs/server.crt https://raw.githubusercontent.com/elabftw/drop-elabftw/master/server.crt
 
 echo "[*] Installing elabftw in /elabftw"
 # elabftw
-git clone --depth 1 -b master https://github.com/NicolasCARPi/elabftw.git /elabftw >> $logfile 2>&1
+git clone --depth 1 -b master https://github.com/elabftw/elabftw.git /elabftw >> $logfile 2>&1
 # fix permissions
 chown -R www-data:www-data /elabftw
 

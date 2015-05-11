@@ -9,7 +9,7 @@ The following actions will be performed :
 - install of elabftw
 - get everything up and running
 
-**WARNING**: this script will work for a fresh drop. If you already have a server running, you should consider a [normal install](https://github.com/NicolasCARPi/elabftw#install-on-a-gnulinux-server) instead.
+**WARNING**: this script will work for a fresh drop. If you already have a server running, you should consider a [normal install](https://github.com/elabftw/elabftw#install-on-a-gnulinux-server) instead.
 
 # How to use
 
