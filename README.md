@@ -34,7 +34,7 @@ tmux
 * Enter the following command
 
 ```
-wget -qO- http://get.elabftw.net|sh
+wget -qO- https://get.elabftw.net|sh
 ```
 
 * (Optional) Open a new pane with Ctrl-b, release and press %. Then enter :
