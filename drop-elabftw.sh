@@ -15,11 +15,12 @@ echo "You can follow the status of the install with"
 echo "tail -f $logfile (in another terminal)"
 echo ""
 
-echo "[*] Installing nginx, php, openssl and git"
+echo "[*] Installing nginx, php, mysql, openssl and git"
 apt-get update >> $logfile 2>&1
 #apt-get upgrade
 DEBIAN_FRONTEND=noninteractive apt-get -y install \
     nginx \
+    mysql-server \
     openssl \
     php5-fpm \
     php5-mysql\
@@ -30,14 +31,6 @@ DEBIAN_FRONTEND=noninteractive apt-get -y install \
     curl \
     git \
     software-properties-common >> $logfile 2>&1
-
-# we used to need the latest version of mariadb (or mysql 5.6)
-# not anymore, but I leave it here because it harms no one to use recent software.
-echo "[*] Installing mariadb version 10.0 (SQL server)"
-apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db >> $logfile 2>&1
-add-apt-repository 'deb http://nwps.ws/pub/mariadb/repo/10.0/ubuntu trusty main' >> $logfile 2>&1
-apt-get update >> $logfile 2>&1
-DEBIAN_FRONTEND=noninteractive apt-get -y install mariadb-server >> $logfile 2>&1
 
 echo "[*] Configuring server"
 # mysql config
