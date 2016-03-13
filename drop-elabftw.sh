@@ -48,19 +48,10 @@ sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php5/fpm/php-fpm.conf
 sed -i -e "s/;catch_workers_output\s*=\s*yes/catch_workers_output = yes/g" /etc/php5/fpm/pool.d/www.conf
 
 # nginx site conf
+service nginx stop
 wget -qO /etc/nginx/sites-available/default https://raw.githubusercontent.com/elabftw/drop-elabftw/master/nginx-site.conf
-# ssl key + cert
-if [ ! -f /etc/ssl/certs/server.crt ]; then
-    openssl req \
-        -new \
-        -newkey rsa:4096 \
-        -days 9999 \
-        -nodes \
-        -x509 \
-        -subj "/C=FR/ST=France/L=Paris/O=elabftw/CN=www.example.com" \
-        -keyout /etc/ssl/certs/server.key \
-        -out /etc/ssl/certs/server.crt
-fi
+# get letsencrypt
+git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt /letsencrypt >> $logfile 2>&1
 
 echo "[*] Installing elabftw in /elabftw"
 # elabftw
@@ -68,13 +59,8 @@ git clone --depth 1 -b master https://github.com/elabftw/elabftw.git /elabftw >>
 # fix permissions
 chown -R www-data:www-data /elabftw
 
-
 echo "[*] Starting php5"
 service php5-fpm start
-echo "[*] Starting nginx web server"
-service nginx start
-# because it is started already with wrong default conf
-service nginx restart
 echo "[*] Starting mysql database"
 service mysql start
 
@@ -93,20 +79,13 @@ echo "grant usage on *.* to elabftw@localhost identified by '$pass';" | mysql -u
 echo "grant all privileges on elabftw.* to elabftw@localhost;" | mysql -u root -p$rootpass
 
 ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
-echo "Congratulations! eLabFTW is now running :)\n
-====> Go to https://$ip/install now ! <====\n
+echo "Here are the credentials for your eLabFTW installation:\n
 Host for mysql database : localhost\n
 Name of the database : elabftw\n
 Username to connect to MySQL server : elabftw\n
 Password : $pass\n
-====> Go to https://$ip/install now ! <====\n
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 echo "\n\n\nPassword for MySQL user 'elabftw' : $pass" >> $logfile
 echo "Password for MySQL user 'root': $rootpass" >> $logfile
 echo "The password is also stored in the log file $logfile"
-echo "Please report bugs you find. ENJOY ! :)"
-echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-echo "It is highly recommended to use Let'sEncrypt project to get a real certificate."
-echo "https://github.com/letsencrypt/letsencrypt"
-echo "The one you have here is autosigned and users will get warnings."
-echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo "Now you need to get a certificate from letsencrypt and start nginx"
