@@ -50,8 +50,17 @@ sed -i -e "s/;catch_workers_output\s*=\s*yes/catch_workers_output = yes/g" /etc/
 # nginx site conf
 wget -qO /etc/nginx/sites-available/default https://raw.githubusercontent.com/elabftw/drop-elabftw/master/nginx-site.conf
 # ssl key + cert
-wget -qO /etc/ssl/certs/server.key https://raw.githubusercontent.com/elabftw/drop-elabftw/master/server.key
-wget -qO /etc/ssl/certs/server.crt https://raw.githubusercontent.com/elabftw/drop-elabftw/master/server.crt
+if [ ! -f /etc/nginx/certs/server.crt ]; then
+    openssl req \
+        -new \
+        -newkey rsa:4096 \
+        -days 9999 \
+        -nodes \
+        -x509 \
+        -subj "/C=FR/ST=France/L=Paris/O=elabftw/CN=www.example.com" \
+        -keyout /etc/nginx/certs/server.key \
+        -out /etc/nginx/certs/server.crt
+fi
 
 echo "[*] Installing elabftw in /elabftw"
 # elabftw
@@ -96,4 +105,8 @@ echo "\n\n\nPassword for MySQL user 'elabftw' : $pass" >> $logfile
 echo "Password for MySQL user 'root': $rootpass" >> $logfile
 echo "The password is also stored in the log file $logfile"
 echo "Please report bugs you find. ENJOY ! :)"
-exit 0
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo "It is highly recommended to use Let'sEncrypt project to get a real certificate."
+echo "https://github.com/letsencrypt/letsencrypt"
+echo "The one you have here is autosigned and users will get warnings."
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
