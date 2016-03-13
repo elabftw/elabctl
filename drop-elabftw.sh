@@ -11,16 +11,17 @@ echo " \___||_| \__,_||_.__/ |_|   \__|  \_/\_/  "
 echo ""
 
 # get info for letsencrypt and nginx
-echo "Welcome to the install of elabftw :)"
+echo "[:)] Welcome to the install of elabftw!"
+echo ""
 echo "[?] What is the domain name of this server?"
 echo "[!] WARNING: don't put the IP address!"
-echo "Example : elabftw.ktu.edu"
-read -p "Your domain name: " domain
+echo "[*] Example : elabftw.ktu.edu"
+read -p "[?] Your domain name: " domain
 echo "[?] Second and last question, what is your email?"
 echo "[!] It is sent only to letsencrypt"
 read email
-echo "You can follow the status of the install with"
-echo "tail -f $logfile (in another terminal)"
+echo "[*] You can follow the status of the install with"
+echo "[$] tail -f $logfile (in another terminal)"
 echo ""
 
 echo "[*] Installing nginx, php, mysql, openssl and git"
@@ -69,12 +70,9 @@ git clone --depth 1 -b master https://github.com/elabftw/elabftw.git /elabftw >>
 # fix permissions
 chown -R www-data:www-data /elabftw
 
-echo "[*] Starting php5"
-service php5-fpm start
-echo "[*] Starting mysql database"
-service mysql start
-
 # create the elabftw database
+echo "[*] Starting MySQL database"
+service mysql start
 rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 echo "[*] Giving a password to MySQL root account"
 echo "UPDATE mysql.user SET Password=PASSWORD('$rootpass') WHERE User='root';
@@ -87,6 +85,11 @@ echo "create database elabftw;" | mysql -u root -p$rootpass
 pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 echo "grant usage on *.* to elabftw@localhost identified by '$pass';" | mysql -u root -p$rootpass
 echo "grant all privileges on elabftw.* to elabftw@localhost;" | mysql -u root -p$rootpass
+
+echo "[*] Starting php-fpm"
+service php5-fpm start
+echo "[*] Starting nginx"
+service nginx start
 
 ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
 echo "Here are the credentials for your eLabFTW installation:\n
