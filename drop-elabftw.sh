@@ -10,12 +10,22 @@ echo "|  __/| || (_| || |_) ||  _|| |_  \ V  V / "
 echo " \___||_| \__,_||_.__/ |_|   \__|  \_/\_/  "
 echo ""
 
-logfile='elabftw.log'
+# get info for letsencrypt and nginx
+echo "Welcome to the install of elabftw :)"
+echo "[?] What is the domain name of this server?"
+echo "[!] WARNING: don't put the IP address!"
+echo "Example : elabftw.ktu.edu"
+read -p "Your domain name: " domain
+echo "[?] Second and last question, what is your email?"
+echo "[!] It is sent only to letsencrypt"
+read email
 echo "You can follow the status of the install with"
 echo "tail -f $logfile (in another terminal)"
 echo ""
 
 echo "[*] Installing nginx, php, mysql, openssl and git"
+
+logfile='elabftw.log'
 apt-get update >> $logfile 2>&1
 #apt-get upgrade
 DEBIAN_FRONTEND=noninteractive apt-get -y install \
@@ -44,14 +54,14 @@ sed -i -e"s/keepalive_timeout 2/keepalive_timeout 2;\n\tclient_max_body_size 100
 sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" /etc/php5/fpm/php.ini
 sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 100M/g" /etc/php5/fpm/php.ini
 sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 100M/g" /etc/php5/fpm/php.ini
-sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php5/fpm/php-fpm.conf
-sed -i -e "s/;catch_workers_output\s*=\s*yes/catch_workers_output = yes/g" /etc/php5/fpm/pool.d/www.conf
 
 # nginx site conf
 service nginx stop
 wget -qO /etc/nginx/sites-available/default https://raw.githubusercontent.com/elabftw/drop-elabftw/master/nginx-site.conf
+sed -i "s/DOMAIN/$domain/g" /etc/nginx/sites-available/default
 # get letsencrypt
 git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt /letsencrypt >> $logfile 2>&1
+cd /letsencrypt && ./letsencrypt-auto certonly --email $email --agree-tos -d $domain
 
 echo "[*] Installing elabftw in /elabftw"
 # elabftw
