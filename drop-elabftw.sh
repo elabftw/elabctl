@@ -10,6 +10,7 @@ echo "|  __/| || (_| || |_) ||  _|| |_  \ V  V / "
 echo " \___||_| \__,_||_.__/ |_|   \__|  \_/\_/  "
 echo ""
 
+logfile='elabftw.log'
 # get info for letsencrypt and nginx
 echo "[:)] Welcome to the install of elabftw!"
 echo ""
@@ -27,7 +28,6 @@ echo ""
 
 echo "[*] Installing nginx, php, mysql, openssl and git"
 
-logfile='elabftw.log'
 apt-get update >> $logfile 2>&1
 #apt-get upgrade
 DEBIAN_FRONTEND=noninteractive apt-get -y install \
