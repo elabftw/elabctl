@@ -19,9 +19,10 @@ echo "[*] Example : elabftw.ktu.edu"
 read -p "[?] Your domain name: " domain
 echo "[?] Second and last question, what is your email?"
 echo "[!] It is sent only to letsencrypt"
-read email
+read -p "[?] Your email: " email
 echo "[*] You can follow the status of the install with"
-echo "[$] tail -f $logfile (in another terminal)"
+echo "[*] Do Ctrl-b, release and press '%'"
+echo "[$] tail -f $logfile"
 echo ""
 
 echo "[*] Installing nginx, php, mysql, openssl and git"
