@@ -45,9 +45,6 @@ DEBIAN_FRONTEND=noninteractive apt-get -y install \
     software-properties-common >> $logfile 2>&1
 
 echo "[*] Configuring server"
-# mysql config
-sed -i -e"s/^bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/" /etc/mysql/my.cnf
-
 # nginx config
 sed -i -e"s/keepalive_timeout\s*65/keepalive_timeout 2/" /etc/nginx/nginx.conf
 sed -i -e"s/keepalive_timeout 2/keepalive_timeout 2;\n\tclient_max_body_size 100m/" /etc/nginx/nginx.conf
@@ -61,9 +58,15 @@ sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 100M/g" /etc/php5/fpm/php.in
 service nginx stop
 wget -qO /etc/nginx/sites-available/default https://raw.githubusercontent.com/elabftw/drop-elabftw/master/nginx-site.conf
 sed -i "s/DOMAIN/$domain/g" /etc/nginx/sites-available/default
-# get letsencrypt
+
+echo "[*] Generating Diffie-Hellman group (can be a bit long)"
+openssl dhparam -out /etc/nginx/dhparams.pem 2048 2>&1
+
+echo "[*] Installing letsencrypt in /letsencrypt"
 git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt /letsencrypt >> $logfile 2>&1
-cd /letsencrypt && ./letsencrypt-auto certonly --email $email --agree-tos -d $domain
+
+echo "[*] Getting the SSL certificate"
+cd /letsencrypt && ./letsencrypt-auto certonly --email $email --agree-tos -d $domain >> $logfile 2>&1
 
 echo "[*] Installing elabftw in /elabftw"
 # elabftw
@@ -72,8 +75,6 @@ git clone --depth 1 -b master https://github.com/elabftw/elabftw.git /elabftw >>
 chown -R www-data:www-data /elabftw
 
 # create the elabftw database
-echo "[*] Starting MySQL database"
-service mysql start
 rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 echo "[*] Giving a password to MySQL root account"
 echo "UPDATE mysql.user SET Password=PASSWORD('$rootpass') WHERE User='root';
@@ -88,7 +89,7 @@ echo "grant usage on *.* to elabftw@localhost identified by '$pass';" | mysql -u
 echo "grant all privileges on elabftw.* to elabftw@localhost;" | mysql -u root -p$rootpass
 
 echo "[*] Starting php-fpm"
-service php5-fpm start
+service php5-fpm restart
 echo "[*] Starting nginx"
 service nginx start
 
