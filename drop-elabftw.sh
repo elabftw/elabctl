@@ -50,7 +50,7 @@ sed -i -e "s/;catch_workers_output\s*=\s*yes/catch_workers_output = yes/g" /etc/
 # nginx site conf
 wget -qO /etc/nginx/sites-available/default https://raw.githubusercontent.com/elabftw/drop-elabftw/master/nginx-site.conf
 # ssl key + cert
-if [ ! -f /etc/nginx/certs/server.crt ]; then
+if [ ! -f /etc/ssl/certs/server.crt ]; then
     openssl req \
         -new \
         -newkey rsa:4096 \
@@ -58,8 +58,8 @@ if [ ! -f /etc/nginx/certs/server.crt ]; then
         -nodes \
         -x509 \
         -subj "/C=FR/ST=France/L=Paris/O=elabftw/CN=www.example.com" \
-        -keyout /etc/nginx/certs/server.key \
-        -out /etc/nginx/certs/server.crt
+        -keyout /etc/ssl/certs/server.key \
+        -out /etc/ssl/certs/server.crt
 fi
 
 echo "[*] Installing elabftw in /elabftw"
