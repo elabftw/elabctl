@@ -66,7 +66,7 @@ echo "[*] Installing letsencrypt in /letsencrypt"
 git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt /letsencrypt >> $logfile 2>&1
 
 echo "[*] Getting the SSL certificate"
-cd /letsencrypt && ./letsencrypt-auto certonly --email $email --agree-tos -d $domain >> $logfile 2>&1
+cd /letsencrypt && ./letsencrypt-auto certonly --email $email --agree-tos -d $domain
 
 echo "[*] Installing elabftw in /elabftw"
 # elabftw
