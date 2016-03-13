@@ -1,5 +1,10 @@
 #!/bin/sh
 # http://www.elabftw.net
+logfile='elabftw.log'
+rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
+pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
+echo "Password for MySQL user 'elabftw' : $pass" >> $logfile
+echo "Password for MySQL user 'root': $rootpass" >> $logfile
 
 # display ascii logo
 clear
@@ -10,7 +15,6 @@ echo "|  __/| || (_| || |_) ||  _|| |_  \ V  V / "
 echo " \___||_| \__,_||_.__/ |_|   \__|  \_/\_/  "
 echo ""
 
-logfile='elabftw.log'
 # get info for letsencrypt and nginx
 echo "[:)] Welcome to the install of elabftw!"
 echo ""
@@ -75,7 +79,6 @@ git clone --depth 1 -b master https://github.com/elabftw/elabftw.git /elabftw >>
 chown -R www-data:www-data /elabftw
 
 # create the elabftw database
-rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 echo "[*] Giving a password to MySQL root account"
 echo "UPDATE mysql.user SET Password=PASSWORD('$rootpass') WHERE User='root';
 FLUSH PRIVILEGES;" | mysql -u root
@@ -84,7 +87,6 @@ sed -i "/\[client\]/a user = root \\npassword = $rootpass" /etc/mysql/my.cnf
 
 echo "[*] Creating the  elabftw database and user with random password"
 echo "create database elabftw;" | mysql -u root -p$rootpass
-pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 echo "grant usage on *.* to elabftw@localhost identified by '$pass';" | mysql -u root -p$rootpass
 echo "grant all privileges on elabftw.* to elabftw@localhost;" | mysql -u root -p$rootpass
 
@@ -102,6 +104,4 @@ Username to connect to MySQL server : elabftw\n
 Password : $pass\n
 ====> Go to https://$ip/install now ! <====\n
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-echo "\n\n\nPassword for MySQL user 'elabftw' : $pass" >> $logfile
-echo "Password for MySQL user 'root': $rootpass" >> $logfile
-echo "The password is also stored in the log file $logfile"
+echo "The password is also stored in the beginning of the log file: $logfile"
