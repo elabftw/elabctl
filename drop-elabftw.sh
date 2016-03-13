@@ -93,13 +93,14 @@ echo "[*] Starting nginx"
 service nginx start
 
 ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
-echo "Here are the credentials for your eLabFTW installation:\n
+echo "Congratulations, eLabFTW is now running! :)\n
+====> Go to https://$ip/install now ! <====\n
 Host for mysql database : localhost\n
 Name of the database : elabftw\n
 Username to connect to MySQL server : elabftw\n
 Password : $pass\n
+====> Go to https://$ip/install now ! <====\n
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 echo "\n\n\nPassword for MySQL user 'elabftw' : $pass" >> $logfile
 echo "Password for MySQL user 'root': $rootpass" >> $logfile
 echo "The password is also stored in the log file $logfile"
-echo "Now you need to get a certificate from letsencrypt and start nginx"
