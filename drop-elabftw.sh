@@ -30,16 +30,11 @@ echo " \___||_| \__,_||_.__/ |_|   \__|  \_/\_/  "
 echo ""
 
 # get info for letsencrypt and nginx
-echo "[:)] Welcome to the install of elabftw!"
-echo ""
+echo "[:)] Welcome to the install of elabftw!\n"
 echo "[?] What is the domain name of this server?"
 echo "[*] Example : elabftw.ktu.edu"
 echo "[*] Example : $ip"
 read -p "[?] Your domain name: " domain
-echo "[*] You can follow the status of the install with"
-echo "[*] Ctrl-b, release and press '%'"
-echo "[$] tail -f $logfile"
-echo ""
 
 echo "[*] Updating packages list"
 apt-get update >> $logfile 2>&1
