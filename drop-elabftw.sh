@@ -25,7 +25,8 @@ echo "[*] Updating packages list"
 apt-get update >> $logfile 2>&1
 
 echo "[*] Installing python-pip"
-apt-get install python-pip >> $logfile 2>&1
+DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    python-pip >> $logfile 2>&1
 
 echo "[*] Installing docker-compose"
 pip install -U docker-compose >> $logfile 2>&1
