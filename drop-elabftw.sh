@@ -76,7 +76,7 @@ docker-compose up -d
 echo "[*] Run elabftw after reboot"
 sed -i -e "s:exit 0:cd /root && /usr/local/bin/docker-compose -d:" /etc/rc.local
 
-echo "Congratulations, eLabFTW is now running! :)\n
-echo "It might take a minute to run at first.\n"
+echo "Congratulations, eLabFTW is now running! :)\n"
+echo "It might take a minute to run at first.\n
 ====> Go to https://$ip/install now ! <====\n
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
