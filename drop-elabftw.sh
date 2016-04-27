@@ -18,6 +18,7 @@ logfile='elabftw.log'
 # mysql passwords
 rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
+ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
 
 # display ascii logo
 clear
@@ -31,6 +32,10 @@ echo ""
 # get info for letsencrypt and nginx
 echo "[:)] Welcome to the install of elabftw!"
 echo ""
+echo "[?] What is the domain name of this server?"
+echo "[*] Example : elabftw.ktu.edu"
+echo "[*] Example : $ip"
+read -p "[?] Your domain name: " domain
 echo "[*] You can follow the status of the install with"
 echo "[*] Ctrl-b, release and press '%'"
 echo "[$] tail -f $logfile"
@@ -71,13 +76,6 @@ docker-compose up -d
 echo "[*] Run elabftw after reboot"
 sed -i -e "s:exit 0:cd /root && /usr/local/bin/docker-compose -d:" /etc/rc.local
 
-#echo "[*] Installing letsencrypt in /letsencrypt"
-#git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt /letsencrypt >> $logfile 2>&1
-
-#echo "[*] Getting the SSL certificate"
-#cd /letsencrypt && ./letsencrypt-auto certonly --email $email --agree-tos -d $domain
-
-ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
 echo "Congratulations, eLabFTW is now running! :)\n
 echo "It might take a minute to run at first.\n"
 ====> Go to https://$ip/install now ! <====\n
