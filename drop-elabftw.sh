@@ -1,6 +1,21 @@
 #!/bin/sh
 # http://www.elabftw.net
+
+# exit on error
+set -e
+
+# exit if variable isn't set
+set -u
+
+# root only
+if [ $EUID != 0 ];then
+    echo "Why u no root?"
+    exit 1
+fi
+
 logfile='elabftw.log'
+
+# mysql passwords
 rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 
@@ -32,7 +47,8 @@ echo "[*] Installing docker-compose"
 pip install -U docker-compose >> $logfile 2>&1
 
 echo "[*] Creating folder structure"
-mkdir -pvm 777 /elabftw/{web,mysql} >> $logfile 2>&1
+# use bash because sh doesn't understand the {web,mysql} thing
+/bin/bash -c "mkdir -pvm 777 /elabftw/{web,mysql}" >> $logfile 2>&1
 
 echo "[*] Grabbing the docker-compose configuration file"
 wget -q https://raw.githubusercontent.com/elabftw/docker-elabftw/master/src/docker-compose.yml-EXAMPLE -O docker-compose.yml
@@ -52,6 +68,9 @@ sed -i -e "s:/dok/mysql:/elabftw/mysql:" docker-compose.yml
 
 echo "[*] Launching docker"
 docker-compose up -d
+
+echo "[*] Run elabftw after reboot"
+sed -i -e "s:exit 0:cd /root && /usr/local/bin/docker-compose -d:" /etc/rc.local
 
 #echo "[*] Installing letsencrypt in /letsencrypt"
 #git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt /letsencrypt >> $logfile 2>&1
