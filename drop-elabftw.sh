@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # http://www.elabftw.net
 
 # exit on error
@@ -47,8 +47,7 @@ echo "[*] Installing docker-compose"
 pip install -U docker-compose >> $logfile 2>&1
 
 echo "[*] Creating folder structure"
-# use bash because sh doesn't understand the {web,mysql} thing
-/bin/bash -c "mkdir -pvm 777 /elabftw/{web,mysql}" >> $logfile 2>&1
+mkdir -pvm 777 /elabftw/{web,mysql} >> $logfile 2>&1
 
 echo "[*] Grabbing the docker-compose configuration file"
 wget -q https://raw.githubusercontent.com/elabftw/docker-elabftw/master/src/docker-compose.yml-EXAMPLE -O docker-compose.yml
