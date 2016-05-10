@@ -61,7 +61,6 @@ secret_key=$(curl -s https://demo.elabftw.net/install/generateSecretKey.php)
 sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" docker-compose.yml
 sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$domain/" docker-compose.yml
 sed -i -e "s:/dok/uploads:/elabftw/web:" docker-compose.yml
-sed -i -e "s:letsencrypt/live/YOUR_DOMAIN:letsencrypt/live/$domain:" docker-compose.yml
 
 # mysql config
 sed -i -e "s/MYSQL_ROOT_PASSWORD=secr3t/MYSQL_ROOT_PASSWORD=$rootpass/" docker-compose.yml
