@@ -33,8 +33,11 @@ echo ""
 echo "[:)] Welcome to the install of elabftw!\n"
 echo "[?] What is the domain name of this server?"
 echo "[*] Example : elabftw.ktu.edu"
-echo "[*] Example : $ip"
+echo "[!] WARNING: don't put the IP address!"
 read -p "[?] Your domain name: " domain
+echo "[?] Second and last question, what is your email?"
+echo "[!] It is sent only to letsencrypt"
+read -p "[?] Your email: " email
 
 echo "[*] Updating packages list"
 apt-get update >> $logfile 2>&1
@@ -58,12 +61,19 @@ secret_key=$(curl -s https://demo.elabftw.net/install/generateSecretKey.php)
 sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" docker-compose.yml
 sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$domain/" docker-compose.yml
 sed -i -e "s:/dok/uploads:/elabftw/web:" docker-compose.yml
+sed -i -e "s:letsencrypt/live/YOUR_DOMAIN:letsencrypt/live/$domain:" docker-compose.yml
 
 # mysql config
 sed -i -e "s/MYSQL_ROOT_PASSWORD=secr3t/MYSQL_ROOT_PASSWORD=$rootpass/" docker-compose.yml
 sed -i -e "s/MYSQL_PASSWORD=secr3t/MYSQL_PASSWORD=$pass/" docker-compose.yml
 sed -i -e "s/DB_PASSWORD=secr3t/DB_PASSWORD=$pass/" docker-compose.yml
 sed -i -e "s:/dok/mysql:/elabftw/mysql:" docker-compose.yml
+
+echo "[*] Installing letsencrypt in /letsencrypt"
+git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt /letsencrypt >> $logfile 2>&1
+
+echo "[*] Getting the SSL certificate"
+cd /letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
 
 echo "[*] Launching docker"
 docker-compose up -d
@@ -72,6 +82,6 @@ echo "[*] Run elabftw after reboot"
 sed -i -e "s:exit 0:cd /root \&\& /usr/local/bin/docker-compose -d:" /etc/rc.local
 
 echo "Congratulations, eLabFTW is now running! :)\n"
-echo "It might take a minute to run at first.\n
-====> Go to https://$ip/install now ! <====\n
+echo "It will take a minute or two to run at first.\n
+====> Go to https://$domain/install in a minute! <====\n
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
