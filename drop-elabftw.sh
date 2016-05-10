@@ -30,7 +30,7 @@ echo " \___||_| \__,_||_.__/ |_|   \__|  \_/\_/  "
 echo ""
 
 # get info for letsencrypt and nginx
-echo "[:)] Welcome to the install of elabftw!\n"
+echo "[:)] Welcome to the install of elabftw!"
 echo "[?] What is the domain name of this server?"
 echo "[*] Example : elabftw.ktu.edu"
 echo "[!] WARNING: don't put the IP address!"
@@ -75,11 +75,12 @@ git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt /letsen
 echo "[*] Getting the SSL certificate"
 cd /letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
 
-echo "[*] Launching docker"
-docker-compose up -d
-
 echo "[*] Run elabftw after reboot"
 sed -i -e "s:exit 0:cd /root \&\& /usr/local/bin/docker-compose -d:" /etc/rc.local
+
+echo "[*] Launching docker"
+cd /root && docker-compose up -d
+
 
 echo "Congratulations, eLabFTW is now running! :)\n"
 echo "It will take a minute or two to run at first.\n
