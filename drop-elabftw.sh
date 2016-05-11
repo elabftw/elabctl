@@ -62,6 +62,10 @@ sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" docker-compose.yml
 sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$domain/" docker-compose.yml
 sed -i -e "s:/dok/uploads:/elabftw/web:" docker-compose.yml
 
+# enable letsencrypt
+sed -i -e "s:/ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" docker-compose.yml
+sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" docker-compose.yml
+
 # mysql config
 sed -i -e "s/MYSQL_ROOT_PASSWORD=secr3t/MYSQL_ROOT_PASSWORD=$rootpass/" docker-compose.yml
 sed -i -e "s/MYSQL_PASSWORD=secr3t/MYSQL_PASSWORD=$pass/" docker-compose.yml
