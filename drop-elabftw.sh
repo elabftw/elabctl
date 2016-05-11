@@ -63,7 +63,7 @@ sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$domain/" docker-compose.yml
 sed -i -e "s:/dok/uploads:/elabftw/web:" docker-compose.yml
 
 # enable letsencrypt
-sed -i -e "s:/ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" docker-compose.yml
+sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" docker-compose.yml
 sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" docker-compose.yml
 
 # mysql config
