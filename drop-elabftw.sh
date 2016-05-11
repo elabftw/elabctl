@@ -78,14 +78,16 @@ git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt /letsen
 echo "[*] Getting the SSL certificate"
 cd /letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
 
-echo "[*] Run elabftw after reboot"
+echo "[*] Setting up automatic startup after boot"
 sed -i -e "s:exit 0:cd /root \&\& /usr/local/bin/docker-compose -d:" /etc/rc.local
 
 echo "[*] Launching docker"
 cd /root && docker-compose up -d
 
-
-echo "Congratulations, eLabFTW is now running! :)\n"
-echo "It will take a minute or two to run at first.\n
-====> Go to https://$domain/install in a minute! <====\n
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "Congratulations, eLabFTW was successfully installed! :)"
+echo "It will take a minute or two to run at first."
+echo "====> Go to https://$domain/install in a minute! <===="
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
