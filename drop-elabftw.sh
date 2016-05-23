@@ -31,13 +31,19 @@ echo ""
 
 # get info for letsencrypt and nginx
 echo "[:)] Welcome to the install of elabftw!"
-echo "[?] What is the domain name of this server?"
-echo "[*] Example : elabftw.ktu.edu"
-echo "[!] WARNING: don't put the IP address!"
-read -p "[?] Your domain name: " domain
-echo "[?] Second and last question, what is your email?"
-echo "[!] It is sent only to letsencrypt"
-read -p "[?] Your email: " email
+read -p "[?] Is a domain name pointing to this server? (y/n)" hasdomain
+if [ $hasdomain == 'y' ]; then
+    echo "Cool, we will use Let's Encrypt then :)"
+    echo "[?] What is the domain name of this server?"
+    echo "[*] Example : elabftw.ktu.edu"
+    read -p "[?] Your domain name: " domain
+    echo "[?] Last question, what is your email?"
+    echo "[!] It is sent only to letsencrypt"
+    read -p "[?] Your email: " email
+else
+    domain=$ip
+    echo "[*] That's ok, we will use a self signed certificate."
+fi
 
 echo "[*] Updating packages list"
 apt-get update >> $logfile 2>&1
@@ -63,8 +69,10 @@ sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$domain/" docker-compose.yml
 sed -i -e "s:/dok/uploads:/elabftw/web:" docker-compose.yml
 
 # enable letsencrypt
-sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" docker-compose.yml
-sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" docker-compose.yml
+if [[ $hasdomain == 'y' ]]; then
+    sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" docker-compose.yml
+    sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" docker-compose.yml
+fi
 
 # mysql config
 sed -i -e "s/MYSQL_ROOT_PASSWORD=secr3t/MYSQL_ROOT_PASSWORD=$rootpass/" docker-compose.yml
@@ -72,11 +80,13 @@ sed -i -e "s/MYSQL_PASSWORD=secr3t/MYSQL_PASSWORD=$pass/" docker-compose.yml
 sed -i -e "s/DB_PASSWORD=secr3t/DB_PASSWORD=$pass/" docker-compose.yml
 sed -i -e "s:/dok/mysql:/elabftw/mysql:" docker-compose.yml
 
-echo "[*] Installing letsencrypt in /letsencrypt"
-git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt /letsencrypt >> $logfile 2>&1
-
-echo "[*] Getting the SSL certificate"
-cd /letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
+if  [[ $hasdomain == 'y' ]];
+then
+    echo "[*] Installing letsencrypt in /letsencrypt"
+    git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt /letsencrypt >> $logfile 2>&1
+    echo "[*] Getting the SSL certificate"
+    cd /letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
+fi
 
 echo "[*] Setting up automatic startup after boot"
 sed -i -e "s:exit 0:cd /root \&\& /usr/local/bin/docker-compose -d:" /etc/rc.local
