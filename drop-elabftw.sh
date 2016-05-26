@@ -90,7 +90,7 @@ then
 fi
 
 echo "[*] Setting up automatic startup after boot"
-sed -i -e "s:exit 0:cd /root \&\& /usr/local/bin/docker-compose -d:" /etc/rc.local
+sed -i -e "s:exit 0:cd /root \&\& /usr/local/bin/docker-compose up -d:" /etc/rc.local
 
 echo "[*] Launching docker"
 cd /root && docker-compose up -d
