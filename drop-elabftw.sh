@@ -69,7 +69,8 @@ sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$domain/" docker-compose.yml
 sed -i -e "s:/dok/uploads:/elabftw/web:" docker-compose.yml
 
 # enable letsencrypt
-if [[ $hasdomain == 'y' ]]; then
+if [ $hasdomain == 'y' ]
+then
     sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" docker-compose.yml
     sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" docker-compose.yml
 fi
@@ -80,7 +81,7 @@ sed -i -e "s/MYSQL_PASSWORD=secr3t/MYSQL_PASSWORD=$pass/" docker-compose.yml
 sed -i -e "s/DB_PASSWORD=secr3t/DB_PASSWORD=$pass/" docker-compose.yml
 sed -i -e "s:/dok/mysql:/elabftw/mysql:" docker-compose.yml
 
-if  [[ $hasdomain == 'y' ]];
+if  [ $hasdomain == 'y' ]
 then
     echo "[*] Installing letsencrypt in /letsencrypt"
     git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt /letsencrypt >> $logfile 2>&1
