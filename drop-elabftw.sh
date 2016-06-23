@@ -13,55 +13,58 @@ if [ $EUID != 0 ];then
     exit 1
 fi
 
-logfile='elabftw.log'
+logfile='/var/log/elabftw.log'
 
 # mysql passwords
 rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
+hasdomain='n'
+domain=$ip
+
+# install dialog first
+echo "Please wait while dialog is being installed…"
+apt-get update >> $logfile 2>&1
+echo "Almost done…"
+DEBIAN_FRONTEND=noninteractive apt-get -y install dialog >> $logfile 2>&1
 
 # display ascii logo
-clear
-echo ""
-echo "  ___ | |  ____ | |__   / _|| |_ __      __"
-echo " / _ \| | / _ ||| |_ \ | |_ | __|\ \ /\ / /"
-echo "|  __/| || (_| || |_) ||  _|| |_  \ V  V / "
-echo " \___||_| \__,_||_.__/ |_|   \__|  \_/\_/  "
-echo ""
+dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --msgbox "\nWelcome to the install of eLabFTW :)\n
+This script will automatically install eLabFTW in a Docker container." 0 0
 
+set +e
 # get info for letsencrypt and nginx
-echo "[:)] Welcome to the install of elabftw!"
-read -p "[?] Is a domain name pointing to this server? (y/n)" hasdomain
-if [ $hasdomain == 'y' ]; then
-    echo "Cool, we will use Let's Encrypt then :)"
-    echo "[?] What is the domain name of this server?"
-    echo "[*] Example : elabftw.ktu.edu"
-    read -p "[?] Your domain name: " domain
-    echo "[?] Last question, what is your email?"
-    echo "[!] It is sent only to letsencrypt"
-    read -p "[?] Your email: " email
-else
-    domain=$ip
-    echo "[*] That's ok, we will use a self signed certificate."
+dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached using a domain name. In this case a proper SSL certificate will be requested from Let's Encrypt.\n\nAnswer no if you can only reach this server using an IP address. In this case a self-signed certificate will be used." 0 0
+if [ $? -eq 0 ]
+then
+    set -e
+    hasdomain='y'
+    domain=$(dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --inputbox "\nCool, we will use Let's Encrypt :)\n
+What is the domain name of this server?\n
+Example : elabftw.ktu.edu\n
+Enter your domain name:\n" 0 0 --output-fd 1)
+    email=$(dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --inputbox "\nLast question, what is your email?\n
+It is sent to Let's Encrypt only.\n
+Enter your email address:\n" 0 0 --output-fd 1)
 fi
 
-echo "[*] Updating packages list"
-apt-get update >> $logfile 2>&1
+set -e
 
-echo "[*] Installing python-pip"
+echo 10 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Installing python-pip" 20 80
 DEBIAN_FRONTEND=noninteractive apt-get -y install \
     python-pip >> $logfile 2>&1
 
-echo "[*] Installing docker-compose"
+echo 30 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Installing docker-compose" 20 80
 pip install -U docker-compose >> $logfile 2>&1
 
-echo "[*] Creating folder structure"
+echo 40 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Creating folder structure" 20 80
 mkdir -pvm 777 /elabftw/{web,mysql} >> $logfile 2>&1
 
-echo "[*] Grabbing the docker-compose configuration file"
+echo 50 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Grabbing the docker-compose configuration file" 20 80
 wget -q https://raw.githubusercontent.com/elabftw/docker-elabftw/master/src/docker-compose.yml-EXAMPLE -O docker-compose.yml
 
-echo "[*] Adjusting configuration"
+
+echo 50 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Adjusting configuration" 20 80
 # elab config
 secret_key=$(curl -s https://demo.elabftw.net/install/generateSecretKey.php)
 sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" docker-compose.yml
@@ -83,22 +86,18 @@ sed -i -e "s:/dok/mysql:/elabftw/mysql:" docker-compose.yml
 
 if  [ $hasdomain == 'y' ]
 then
-    echo "[*] Installing letsencrypt in /letsencrypt"
+    echo 60 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Installing letsencrypt in /letsencrypt" 20 80
     git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt /letsencrypt >> $logfile 2>&1
-    echo "[*] Getting the SSL certificate"
+    echo 70 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Getting the SSL certificate" 20 80
     cd /letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
 fi
 
-echo "[*] Setting up automatic startup after boot"
+echo 80 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Setting up automatic startup after boot" 20 80
 sed -i -e "s:exit 0:cd /root \&\& /usr/local/bin/docker-compose up -d:" /etc/rc.local
 
-echo "[*] Launching docker"
+echo 90 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Launching Docker" 20 80
 cd /root && docker-compose up -d
 
-echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-echo "Congratulations, eLabFTW was successfully installed! :)"
-echo "It will take a minute or two to run at first."
-echo "====> Go to https://$domain/install in a minute! <===="
-echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+dialog --backtitle "eLabFTW installation" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n
+It will take a minute or two to run at first.\n\n
+====> Go to https://$domain/install in a minute!" 20 80
