@@ -100,4 +100,7 @@ cd /root && docker-compose up -d
 
 dialog --backtitle "eLabFTW installation" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n
 It will take a minute or two to run at first.\n\n
-====> Go to https://$domain/install in a minute!" 20 80
+====> Go to https://$domain/install in a minute!\n\n
+In the mean time, check out what to do after an install:\n
+====> https://elabftw.readthedocs.io/en/hypernext/postinstall.html\n\n
+The log file of the install is here: $logfile" 20 80
