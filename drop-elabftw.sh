@@ -103,4 +103,5 @@ It will take a minute or two to run at first.\n\n
 ====> Go to https://$domain/install in a minute!\n\n
 In the mean time, check out what to do after an install:\n
 ====> https://elabftw.readthedocs.io/en/hypernext/postinstall.html\n\n
-The log file of the install is here: $logfile" 20 80
+The log file of the install is here: $logfile\n
+You can use 'docker logs -f elabftw' to follow the starting up of the container." 20 80
