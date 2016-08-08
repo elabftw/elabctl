@@ -23,7 +23,7 @@ hasdomain='n'
 domain=$ip
 
 # install dialog first
-echo "Please wait while dialog is being installed…"
+echo "Preparing installation. Please wait…"
 apt-get update >> $logfile 2>&1
 echo "Almost done…"
 DEBIAN_FRONTEND=noninteractive apt-get -y install dialog >> $logfile 2>&1
