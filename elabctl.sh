@@ -96,10 +96,10 @@ function install()
     fi
 
     echo 80 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Setting up automatic startup after boot" 20 80
-    sed -i -e "s:exit 0:cd /root \&\& /usr/local/bin/docker-compose up -d:" /etc/rc.local
+    sed -i -e "s:exit 0:cd /root \&\& /usr/local/bin/docker-compose -f $conffile up -d:" /etc/rc.local
 
     echo 90 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Launching Docker" 20 80
-    cd /root && docker-compose up -d
+    cd /root && docker-compose -f $conffile up -d
 
     dialog --backtitle "eLabFTW installation" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n
     It will take a minute or two to run at first.\n\n
@@ -107,6 +107,7 @@ function install()
     In the mean time, check out what to do after an install:\n
     ====> https://elabftw.readthedocs.io/en/hypernext/postinstall.html\n\n
     The log file of the install is here: $logfile\n
+    The configuration file for docker-compose is here: $conffile\n
     You can use 'docker logs -f elabftw' to follow the starting up of the container." 20 80
 }
 
