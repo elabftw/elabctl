@@ -117,6 +117,16 @@ function update()
     restart
 }
 
+function start()
+{
+    docker-compose -f $conffile up -d
+}
+
+function stop()
+{
+    docker-compose -f $conffile down
+}
+
 function restart()
 {
     docker-compose -f $conffile down
@@ -125,7 +135,7 @@ function restart()
 
 function status()
 {
-    docker-compose -f $conffile ps
+    docker ps
 }
 
 function logs()
@@ -136,7 +146,7 @@ function logs()
 
 function usage()
 {
-    echo "Usage: elabctl install|update|restart|status|logs"
+    echo "Usage: elabctl install|update|start|stop|restart|status|logs"
 }
 
 if [ $# -eq 1 ];
