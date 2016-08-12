@@ -132,3 +132,15 @@ function logs()
     docker logs mysql
     docker logs elabftw
 }
+
+function usage()
+{
+    echo "Usage: elabctl install|update|restart|status|logs"
+}
+
+if [ $# -eq 1 ];
+then
+    $1
+else
+    usage
+fi
