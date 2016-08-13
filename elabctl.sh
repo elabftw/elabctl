@@ -144,9 +144,15 @@ function logs()
     docker logs elabftw
 }
 
+function php-logs()
+{
+    docker exec elabftw tail -n 15 /var/log/nginx/error.log
+}
+
 function usage()
 {
-    echo "Usage: elabctl install|update|start|stop|restart|status|logs"
+    echo "Usage: elabctl install|update|start|stop|restart|status|logs|php-logs"
+    exit 1
 }
 
 if [ $# -eq 1 ];
