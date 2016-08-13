@@ -9,7 +9,7 @@ set -u
 
 # root only
 if [ $EUID != 0 ];then
-    echo "Why u no root?"
+    echo "Only the root account can use this script."
     exit 1
 fi
 
@@ -131,8 +131,8 @@ function stop()
 
 function restart()
 {
-    docker-compose -f $conffile down
-    docker-compose -f $conffile up -d
+    stop
+    start
 }
 
 function status()
