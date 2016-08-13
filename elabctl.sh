@@ -15,7 +15,6 @@ fi
 
 logfile='/var/log/elabftw.log'
 conffile='/etc/elabftw.yml'
-datadir='/var/elabftw'
 
 function install()
 {
@@ -73,7 +72,6 @@ function install()
     secret_key=$(curl -s https://demo.elabftw.net/install/generateSecretKey.php)
     sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" $conffile
     sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$domain/" $conffile
-    sed -i -e "s:/dok/uploads:$datadir/web:" $conffile
 
     # enable letsencrypt
     if [ $hasdomain == 'y' ]
@@ -86,7 +84,6 @@ function install()
     sed -i -e "s/MYSQL_ROOT_PASSWORD=secr3t/MYSQL_ROOT_PASSWORD=$rootpass/" $conffile
     sed -i -e "s/MYSQL_PASSWORD=secr3t/MYSQL_PASSWORD=$pass/" $conffile
     sed -i -e "s/DB_PASSWORD=secr3t/DB_PASSWORD=$pass/" $conffile
-    sed -i -e "s:/dok/mysql:$datadir/mysql:" $conffile
 
     if  [ $hasdomain == 'y' ]
     then
