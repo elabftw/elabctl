@@ -62,9 +62,11 @@ function install()
 
     echo 40 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Creating folder structure" 20 80
     mkdir -pvm 777 /elabftw/{web,mysql} >> $logfile 2>&1
+    sleep 1
 
     echo 50 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Grabbing the docker-compose configuration file" 20 80
     wget -q https://raw.githubusercontent.com/elabftw/docker-elabftw/master/src/docker-compose.yml-EXAMPLE -O $conffile
+    sleep 1
 
 
     echo 50 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Adjusting configuration" 20 80
@@ -84,6 +86,8 @@ function install()
     sed -i -e "s/MYSQL_ROOT_PASSWORD=secr3t/MYSQL_ROOT_PASSWORD=$rootpass/" $conffile
     sed -i -e "s/MYSQL_PASSWORD=secr3t/MYSQL_PASSWORD=$pass/" $conffile
     sed -i -e "s/DB_PASSWORD=secr3t/DB_PASSWORD=$pass/" $conffile
+
+    sleep 1
 
     if  [ $hasdomain == 'y' ]
     then
