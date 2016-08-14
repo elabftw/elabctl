@@ -97,9 +97,6 @@ function install()
         cd /letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
     fi
 
-    echo 80 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Setting up automatic startup after boot" 20 80
-    sed -i -e "s:exit 0:cd /root \&\& /usr/local/bin/docker-compose -f $conffile up -d:" /etc/rc.local
-
     echo 90 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Launching Docker" 20 80
     cd /root && docker-compose -f $conffile up -d
 
