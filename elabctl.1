@@ -1,0 +1,37 @@
+.\" Manpage for elabctl.
+.TH ELABCTL 1
+.SH NAME
+elabctl \- manage an eLabFTW installation
+.SH SYNOPSIS
+.B elabctl \fI[OPTION]
+.SH DESCRIPTION
+elabctl allows you to install and update easily eLabFTW.
+.SH OPTIONS
+.BR install
+Install eLabFTW and start the Docker containers
+.TP
+.BR update
+Update to the latest version
+.TP
+.BR status
+Show status of running containers
+.TP
+.BR start
+Start the containers
+.TP
+.BR stop
+Stop the containers
+.TP
+.BR restart
+Restart the containers
+.TP
+.BR logs
+Show logs of the mysql and eLabFTW containers
+.TP
+.BR php-logs
+Show the last 15 lines of /var/log/nginx/error.log from the container
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Nicolas CARPi (nicolas.carpi@curie.fr)
+
