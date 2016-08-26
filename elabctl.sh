@@ -18,6 +18,11 @@ conffile='/etc/elabftw.yml'
 
 function install()
 {
+    if [ "$(ls -A /var/elabftw)" ]; then
+        echo "It looks like eLabFTW is already installed. Delete the /var/elabftw folder to reinstall."
+        exit 1
+    fi
+
     # mysql passwords
     rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
     pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
