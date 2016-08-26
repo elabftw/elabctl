@@ -10,22 +10,38 @@ set -u
 # root only
 if [ $EUID != 0 ];then
     echo "Only the root account can use this script."
-    exit 1
+    #exit 1
 fi
 
+datadir='/var/elabftw'
 logfile='/var/log/elabftw.log'
 conffile='/etc/elabftw.yml'
+manpage='/usr/man/man1/elabctl.1.gz'
+
+# install manpage
+function getMan()
+{
+    wget -qO- https://github.com/elabftw/drop-elabftw/raw/master/elabctl.1.gz > /usr/share/man/man1/elabctl.1.gz
+}
+
+function help()
+{
+    man elabctl || (getMan && man elabctl)
+}
 
 function install()
 {
-    if [ "$(ls -A /var/elabftw)" ]; then
-        echo "It looks like eLabFTW is already installed. Delete the /var/elabftw folder to reinstall."
+    if [ "$(ls -A $datadir)" ]; then
+        echo "It looks like eLabFTW is already installed. Delete the $datadir folder to reinstall."
         exit 1
     fi
+
+    getMan
 
     # mysql passwords
     rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
     pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
+
     ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
     hasdomain='n'
     domain=$ip
@@ -36,7 +52,7 @@ function install()
     echo "Almost done…"
     DEBIAN_FRONTEND=noninteractive apt-get -y install dialog >> $logfile 2>&1
 
-    # display ascii logo
+    # welcome screen
     dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --msgbox "\nWelcome to the install of eLabFTW :)\n
     This script will automatically install eLabFTW in a Docker container." 0 0
 
@@ -74,8 +90,8 @@ function install()
     sleep 1
 
 
-    echo 50 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Adjusting configuration" 20 80
     # elab config
+    echo 50 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Adjusting configuration" 20 80
     secret_key=$(curl -s https://demo.elabftw.net/install/generateSecretKey.php)
     sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" $conffile
     sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$domain/" $conffile
@@ -112,34 +128,8 @@ function install()
     ====> https://elabftw.readthedocs.io/en/hypernext/postinstall.html\n\n
     The log file of the install is here: $logfile\n
     The configuration file for docker-compose is here: $conffile\n
+    Your data folder is: $datadir. It contains the MySQL database and uploaded files.\n
     You can use 'docker logs -f elabftw' to follow the starting up of the container." 20 80
-}
-
-function update()
-{
-    docker-compose -f $conffile pull
-    restart
-}
-
-function start()
-{
-    docker-compose -f $conffile up -d
-}
-
-function stop()
-{
-    docker-compose -f $conffile down
-}
-
-function restart()
-{
-    stop
-    start
-}
-
-function status()
-{
-    docker ps
 }
 
 function logs()
@@ -153,15 +143,41 @@ function php-logs()
     docker exec elabftw tail -n 15 /var/log/nginx/error.log
 }
 
+function restart()
+{
+    stop
+    start
+}
+
+function start()
+{
+    docker-compose -f $conffile up -d
+}
+
+function status()
+{
+    docker ps
+}
+
+function stop()
+{
+    docker-compose -f $conffile down
+}
+
+function update()
+{
+    docker-compose -f $conffile pull
+    restart
+}
+
 function usage()
 {
-    echo "Usage: elabctl install|update|start|stop|restart|status|logs|php-logs"
-    exit 1
+    help
 }
 
 if [ $# -eq 1 ];
 then
     $1
 else
-    usage
+    help
 fi
