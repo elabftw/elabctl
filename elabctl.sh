@@ -8,7 +8,7 @@ set -u
 # root only
 if [ $EUID != 0 ];then
     echo "Only the root account can use this script."
-#    exit 1
+    exit 1
 fi
 
 backupdir='/var/backups/elabftw'
@@ -40,6 +40,8 @@ function backup()
     zip -rq $zipfile $datadir/web -x $datadir/web/tmp\*
     # add the config file
     zip -rq $zipfile $conffile
+
+    echo "Done. Copy $backupdir over to another computer."
 }
 
 function getDeps()
