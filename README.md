@@ -10,10 +10,12 @@ As root:
 wget -qO- https://get.elabftw.net > /usr/bin/elabctl && chmod +x /usr/bin/elabctl
 ~~~
 
-## Use it
+## Use
 
 ~~~bash
 elabctl help
 ~~~
 
-* [Documentation](https://elabftw.readthedocs.io/en/hypernext/install-drop.html)
+## Read the doc
+
+[Documentation](https://elabftw.readthedocs.io/en/hypernext/install-drop.html)
