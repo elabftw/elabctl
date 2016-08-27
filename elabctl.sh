@@ -185,7 +185,8 @@ function install()
     The log file of the install is here: $logfile\n
     The configuration file for docker-compose is here: $conffile\n
     Your data folder is: $datadir. It contains the MySQL database and uploaded files.\n
-    You can use 'docker logs -f elabftw' to follow the starting up of the container." 20 80
+    You can use 'docker logs -f elabftw' to follow the starting up of the container.\n
+    See 'man elabctl' to backup or update." 20 80
 }
 
 function logs()
