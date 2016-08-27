@@ -186,6 +186,11 @@ function restart()
     start
 }
 
+function self-update()
+{
+    wget -qO- https://raw.githubusercontent.com/elabftw/drop-elabftw/master/elabctl.sh > /usr/bin/elabctl && chmod +x /usr/bin/elabctl
+}
+
 function start()
 {
     docker-compose -f $conffile up -d
