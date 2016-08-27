@@ -189,6 +189,7 @@ function restart()
 function self-update()
 {
     wget -qO- https://raw.githubusercontent.com/elabftw/drop-elabftw/master/elabctl.sh > /usr/bin/elabctl && chmod +x /usr/bin/elabctl
+    getMan
 }
 
 function start()
