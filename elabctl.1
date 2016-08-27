@@ -3,27 +3,32 @@
 .SH NAME
 elabctl \- manage an eLabFTW installation
 .SH SYNOPSIS
-.B elabctl \fI[OPTION]
+.B elabctl \fI[COMMAND]
+.TP
+.B elabctl help
 .SH DESCRIPTION
 elabctl allows you to install, backup, monitor and update easily eLabFTW.
-.SH OPTIONS
+.SH COMMANDS
 .BR backup
 Make a backup of your installation in /var/backups/elabftw.
 .TP
 .BR install
 Install eLabFTW and start the Docker containers
 .TP
-.BR update
-Update to the latest version
+.BR logs
+Show logs of the mysql and eLabFTW containers
+.TP
+.BR php-logs
+Show the last 15 lines of /var/log/nginx/error.log from the container
 .TP
 .BR self-update
 Fetch the latest version of the elabctl script and save it in /usr/bin.
 .TP
-.BR status
-Show status of running containers
-.TP
 .BR start
 Start the containers
+.TP
+.BR status
+Show status of running containers
 .TP
 .BR stop
 Stop the containers
@@ -31,11 +36,11 @@ Stop the containers
 .BR restart
 Restart the containers
 .TP
-.BR logs
-Show logs of the mysql and eLabFTW containers
+.BR update
+Update to the latest version
 .TP
-.BR php-logs
-Show the last 15 lines of /var/log/nginx/error.log from the container
+.BR version
+Display current version
 .SH BUGS
 No known bugs.
 .SH AUTHOR

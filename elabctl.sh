@@ -1,5 +1,6 @@
 #!/bin/bash
 # http://www.elabftw.net
+version='0.1.0'
 
 # exit if variable isn't set
 set -u
@@ -7,7 +8,7 @@ set -u
 # root only
 if [ $EUID != 0 ];then
     echo "Only the root account can use this script."
-    exit 1
+#    exit 1
 fi
 
 backupdir='/var/backups/elabftw'
@@ -59,7 +60,25 @@ function getMan()
 
 function help()
 {
-    man elabctl || (getMan && man elabctl)
+    version
+    echo "
+    Usage: elabctl [COMMAND]
+           elabctl [ help | version ]
+
+    Commands:
+
+        backup          Backup your installation
+        install         Install eLabFTW and start the containers
+        logs            Show logs of the containers
+        php-logs        Show last 15 lines of nginx error log
+        self-update     Update the elabctl script
+        status          Show status of running containers
+        start           Start the containers
+        stop            Stop the containers
+        restart         Restart the containers
+        update          Get the latest version of the containers
+
+    See 'man elabctl' for more informations."
 }
 
 function init()
@@ -216,6 +235,11 @@ function update()
 function usage()
 {
     help
+}
+
+function version()
+{
+    echo "elabctl version $version"
 }
 
 if [ $# -eq 1 ];
