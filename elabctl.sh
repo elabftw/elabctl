@@ -1,22 +1,55 @@
 #!/bin/bash
 # http://www.elabftw.net
 
-# exit on error
-set -e
-
 # exit if variable isn't set
 set -u
 
 # root only
 if [ $EUID != 0 ];then
     echo "Only the root account can use this script."
-    #exit 1
+    exit 1
 fi
 
+backupdir='/var/backups/elabftw'
+conffile='/etc/elabftw.yml'
 datadir='/var/elabftw'
 logfile='/var/log/elabftw.log'
-conffile='/etc/elabftw.yml'
 manpage='/usr/man/man1/elabctl.1.gz'
+
+function backup()
+{
+    if ! $(ls -A $backupdir > /dev/null 2>&1); then
+        mkdir -p $backupdir
+    fi
+
+    set -e
+
+    # get clean date
+    date=$(date --iso-8601) # 2016-02-10
+    zipfile="/var/backups/elabftw/uploaded_files-$date.zip"
+    dumpfile="/var/backups/elabftw/mysql_dump-$date.sql"
+
+    # dump sql
+    docker exec -it mysql bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql $MYSQL_DATABASE' > /dev/null 2>&1
+    # copy it from the container to the host
+    docker cp mysql:dump.sql $dumpfile
+    # compress it to the max
+    gzip -f --best $dumpfile
+    # make a zip of the uploads folder
+    zip -rq $zipfile $datadir/web -x $datadir/web/tmp\*
+    # add the config file
+    zip -rq $zipfile $conffile
+}
+
+function getDeps()
+{
+    if ! $(hash dialog 2>/dev/null); then
+        echo "Preparing installation. Please wait…"
+        apt-get update >> $logfile 2>&1
+        echo "Almost done…"
+        DEBIAN_FRONTEND=noninteractive apt-get -y install dialog zip >> $logfile 2>&1
+    fi
+}
 
 # install manpage
 function getMan()
@@ -29,6 +62,13 @@ function help()
     man elabctl || (getMan && man elabctl)
 }
 
+function init()
+{
+    getMan
+    getDeps
+}
+
+# install elabftw
 function install()
 {
     if [ "$(ls -A $datadir)" ]; then
@@ -36,7 +76,10 @@ function install()
         exit 1
     fi
 
-    getMan
+    # exit on error
+    set -e
+
+    init
 
     # mysql passwords
     rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
@@ -45,12 +88,6 @@ function install()
     ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
     hasdomain='n'
     domain=$ip
-
-    # install dialog first
-    echo "Preparing installation. Please wait…"
-    apt-get update >> $logfile 2>&1
-    echo "Almost done…"
-    DEBIAN_FRONTEND=noninteractive apt-get -y install dialog >> $logfile 2>&1
 
     # welcome screen
     dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --msgbox "\nWelcome to the install of eLabFTW :)\n
