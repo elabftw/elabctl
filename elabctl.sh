@@ -138,7 +138,7 @@ function install()
     pip install -U docker-compose >> $logfile 2>&1
 
     echo 40 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Creating folder structure" 20 80
-    mkdir -pvm 777 /elabftw/{web,mysql} >> $logfile 2>&1
+    mkdir -pvm 777 $datadir/{web,mysql} >> $logfile 2>&1
     sleep 1
 
     echo 50 | dialog --backtitle "eLabFTW installation" --title "Install in the cloud" --gauge "Grabbing the docker-compose configuration file" 20 80
