@@ -1,6 +1,21 @@
 #!/bin/bash
 # http://www.elabftw.net
-version='0.1.0'
+
+###############################################################
+# CONFIGURATION
+# where do you want your backups to end up?
+backupdir='/var/backups/elabftw'
+# where do we store the config file?
+conffile='/etc/elabftw.yml'
+# where do we store the MySQL database and the uploaded files?
+datadir='/var/elabftw'
+# where do we store the logs?
+logfile='/var/log/elabftw.log'
+# END CONFIGURATION
+###############################################################
+
+manpage='/usr/man/man1/elabctl.1.gz'
+version='0.1.1'
 
 # exit if variable isn't set
 set -u
@@ -11,11 +26,6 @@ if [ $EUID != 0 ];then
     exit 1
 fi
 
-backupdir='/var/backups/elabftw'
-conffile='/etc/elabftw.yml'
-datadir='/var/elabftw'
-logfile='/var/log/elabftw.log'
-manpage='/usr/man/man1/elabctl.1.gz'
 
 function backup()
 {
@@ -27,8 +37,8 @@ function backup()
 
     # get clean date
     date=$(date --iso-8601) # 2016-02-10
-    zipfile="/var/backups/elabftw/uploaded_files-$date.zip"
-    dumpfile="/var/backups/elabftw/mysql_dump-$date.sql"
+    zipfile="$backupdir/uploaded_files-$date.zip"
+    dumpfile="$backupdir/mysql_dump-$date.sql"
 
     # dump sql
     docker exec -it mysql bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql $MYSQL_DATABASE' > /dev/null 2>&1
