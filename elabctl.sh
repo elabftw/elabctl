@@ -189,12 +189,10 @@ function install()
         cd $datadir/letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
     fi
 
-    echo 90 | dialog --backtitle $backtitle --title $title --gauge "Launching Docker" 20 80
-    docker-compose -f $conffile up -d
-
-    dialog --backtitle $backtitle --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n
+    dialog --backtitle $backtitle --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
+    You can start the containers with: elabctl start\n\n
     It will take a minute or two to run at first.\n\n
-    ====> Go to https://$domain/install in a minute!\n\n
+    ====> Go to https://$domain/install once started!\n\n
     In the mean time, check out what to do after an install:\n
     ====> https://elabftw.readthedocs.io/en/hypernext/postinstall.html\n\n
     The log file of the install is here: $logfile\n
