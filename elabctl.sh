@@ -124,45 +124,45 @@ function install()
     backtitle="eLabFTW installation"
 
     # welcome screen
-    dialog --backtitle $backtitle --title $title --msgbox "\nWelcome to the install of eLabFTW :)\n
+    dialog --backtitle "$backtitle" --title "$title" --msgbox "\nWelcome to the install of eLabFTW :)\n
     This script will automatically install eLabFTW in a Docker container." 0 0
 
     set +e
     # get info for letsencrypt and nginx
-    dialog --backtitle $backtitle --title $title --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached using a domain name. In this case a proper SSL certificate will be requested from Let's Encrypt.\n\nAnswer no if you can only reach this server using an IP address. In this case a self-signed certificate will be used." 0 0
+    dialog --backtitle "$backtitle" --title "$title" --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached using a domain name. In this case a proper SSL certificate will be requested from Let's Encrypt.\n\nAnswer no if you can only reach this server using an IP address. In this case a self-signed certificate will be used." 0 0
     if [ $? -eq 0 ]
     then
         set -e
         hasdomain='y'
-        domain=$(dialog --backtitle $backtitle --title $title --inputbox "\nCool, we will use Let's Encrypt :)\n
+        domain=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nCool, we will use Let's Encrypt :)\n
     What is the domain name of this server?\n
     Example : elabftw.ktu.edu\n
     Enter your domain name:\n" 0 0 --output-fd 1)
-        email=$(dialog --backtitle $backtitle --title $title --inputbox "\nLast question, what is your email?\n
+        email=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nLast question, what is your email?\n
     It is sent to Let's Encrypt only.\n
     Enter your email address:\n" 0 0 --output-fd 1)
     fi
 
     set -e
 
-    echo 10 | dialog --backtitle $backtitle --title $title --gauge "Installing python-pip" 20 80
+    echo 10 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing python-pip" 20 80
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
         python-pip >> $logfile 2>&1
 
-    echo 30 | dialog --backtitle $backtitle --title $title --gauge "Installing docker-compose" 20 80
+    echo 30 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing docker-compose" 20 80
     pip install -U docker-compose >> $logfile 2>&1
 
-    echo 40 | dialog --backtitle $backtitle --title $title --gauge "Creating folder structure" 20 80
+    echo 40 | dialog --backtitle "$backtitle" --title "$title" --gauge "Creating folder structure" 20 80
     mkdir -pvm 777 $datadir/{web,mysql} >> $logfile 2>&1
     sleep 1
 
-    echo 50 | dialog --backtitle $backtitle --title $title --gauge "Grabbing the docker-compose configuration file" 20 80
+    echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Grabbing the docker-compose configuration file" 20 80
     wget -q https://raw.githubusercontent.com/elabftw/docker-elabftw/master/src/docker-compose.yml-EXAMPLE -O $conffile
     sleep 1
 
 
     # elab config
-    echo 50 | dialog --backtitle $backtitle --title $title --gauge "Adjusting configuration" 20 80
+    echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Adjusting configuration" 20 80
     secret_key=$(curl -s https://demo.elabftw.net/install/generateSecretKey.php)
     sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" $conffile
     sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$domain/" $conffile
@@ -183,13 +183,13 @@ function install()
 
     if  [ $hasdomain == 'y' ]
     then
-        echo 60 | dialog --backtitle $backtitle --title $title --gauge "Installing letsencrypt in /letsencrypt" 20 80
+        echo 60 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing letsencrypt in /letsencrypt" 20 80
         git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt $datadir >> $logfile 2>&1
-        echo 70 | dialog --backtitle $backtitle --title $title --gauge "Getting the SSL certificate" 20 80
+        echo 70 | dialog --backtitle "$backtitle" --title "$title" --gauge "Getting the SSL certificate" 20 80
         cd $datadir/letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
     fi
 
-    dialog --backtitle $backtitle --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
+    dialog --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
     You can start the containers with: elabctl start\n\n
     It will take a minute or two to run at first.\n\n
     ====> Go to https://$domain/install once started!\n\n
