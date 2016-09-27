@@ -102,6 +102,8 @@ function init()
 # install elabftw
 function install()
 {
+    mkdir -p $datadir
+
     if [ "$(ls -A $datadir)" ]; then
         echo "It looks like eLabFTW is already installed. Delete the $datadir folder to reinstall."
         exit 1
