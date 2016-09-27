@@ -150,6 +150,8 @@ function install()
         python-pip >> $logfile 2>&1
 
     echo 30 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing docker-compose" 20 80
+    # make sure we have the latest pip version
+    pip install --upgrade pip >> $logfile 2>&1
     pip install -U docker-compose >> $logfile 2>&1
 
     echo 40 | dialog --backtitle "$backtitle" --title "$title" --gauge "Creating folder structure" 20 80
