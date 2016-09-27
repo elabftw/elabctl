@@ -186,7 +186,7 @@ function install()
     if  [ $hasdomain == 'y' ]
     then
         echo 60 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing letsencrypt in /letsencrypt" 20 80
-        git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt $datadir >> $logfile 2>&1
+        git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt $datadir/letsencrypt >> $logfile 2>&1
         echo 70 | dialog --backtitle "$backtitle" --title "$title" --gauge "Getting the SSL certificate" 20 80
         cd $datadir/letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
     fi
