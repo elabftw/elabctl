@@ -56,7 +56,7 @@ function backup()
 function getDeps()
 {
     if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
-        apt-get update
+        apt-get update >> $logfile 2>&1
     fi
 
     if ! $(hash dialog 2>/dev/null); then
