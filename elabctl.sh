@@ -55,11 +55,61 @@ function backup()
 
 function getDeps()
 {
+    if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
+        apt-get update
+    fi
+
     if ! $(hash dialog 2>/dev/null); then
         echo "Preparing installation. Please wait…"
-        apt-get update >> $logfile 2>&1
-        echo "Almost done…"
-        DEBIAN_FRONTEND=noninteractive apt-get -y install dialog zip >> $logfile 2>&1
+        install-pkg dialog
+    fi
+
+    if ! $(hash zip 2>/dev/null); then
+        echo "Preparing installation. Please wait…"
+        install-pkg zip
+    fi
+
+    if ! $(hash wget 2>/dev/null); then
+        echo "Preparing installation. Please wait…"
+        install-pkg wget
+    fi
+
+    if ! $(hash dig 2>/dev/null); then
+        echo "Preparing installation. Please wait…"
+        install-pkg bind-utils
+    fi
+}
+
+function getDistrib()
+{
+    # let's first try to read /etc/os-release
+    if test -e /etc/os-release
+    then
+
+        # source the file
+        . /etc/os-release
+
+        # pacman = package manager
+        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
+            PACMAN="apt-get -y install"
+        elif [ "$ID" == "fedora" ]; then
+            PACMAN="dnf -y install"
+        elif [ "$ID" == "centos" ]; then
+            PACMAN="yum -y install"
+            wget -q http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm -O /tmp/epel.rpm
+            rpm -ivh /tmp/epel.rpm
+        elif [ "$ID" == "rhel" ]; then
+            PACMAN="yum -y install"
+            wget -q http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm -O /tmp/epel.rpm
+            rpm -ivh /tmp/epel.rpm
+        elif [ "$ID" == "arch" ]; then
+            PACMAN="pacman -Sy"
+        elif [ "$ID" == "opensuse" ]; then
+            PACMAN="zypper -n install"
+        else
+            echo "What distribution are you running? Please open a github issue!"
+            exit 1
+        fi
     fi
 }
 
@@ -94,8 +144,9 @@ function help()
 
 function init()
 {
-    getMan
+    getDistrib
     getDeps
+    getMan
 }
 
 # install elabftw
@@ -146,8 +197,7 @@ function install()
     set -e
 
     echo 10 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing python-pip" 20 80
-    DEBIAN_FRONTEND=noninteractive apt-get -y install \
-        python-pip >> $logfile 2>&1
+    install-pkg python-pip >> $logfile 2>&1
 
     echo 30 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing docker-compose" 20 80
     # make sure we have the latest pip version
@@ -202,6 +252,11 @@ function install()
     Your data folder is: $datadir. It contains the MySQL database and uploaded files.\n
     You can use 'docker logs -f elabftw' to follow the starting up of the container.\n
     See 'man elabctl' to backup or update." 20 80
+}
+
+function install-pkg()
+{
+    $PACMAN $1 >> $logfile 2>&1
 }
 
 function logs()
