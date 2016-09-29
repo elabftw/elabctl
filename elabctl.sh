@@ -57,13 +57,11 @@ function getDeps()
 
     if ! $(hash zip 2>/dev/null); then
         echo "Installing prerequisite package: zip. Please wait…"
-        echo "Preparing installation. Please wait…"
         install-pkg zip
     fi
 
     if ! $(hash wget 2>/dev/null); then
         echo "Installing prerequisite package: wget. Please wait…"
-        echo "Preparing installation. Please wait…"
         install-pkg wget
     fi
 
