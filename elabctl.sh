@@ -51,22 +51,24 @@ function getDeps()
     fi
 
     if ! $(hash dialog 2>/dev/null); then
-        echo "Preparing installation. Please wait…"
+        echo "Installing prerequisite package: dialog. Please wait…"
         install-pkg dialog
     fi
 
     if ! $(hash zip 2>/dev/null); then
+        echo "Installing prerequisite package: zip. Please wait…"
         echo "Preparing installation. Please wait…"
         install-pkg zip
     fi
 
     if ! $(hash wget 2>/dev/null); then
+        echo "Installing prerequisite package: wget. Please wait…"
         echo "Preparing installation. Please wait…"
         install-pkg wget
     fi
 
     if ! $(hash dig 2>/dev/null); then
-        echo "Preparing installation. Please wait…"
+        echo "Installing prerequisite package: bind-utils. Please wait…"
         install-pkg bind-utils
     fi
 }
