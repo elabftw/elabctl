@@ -15,7 +15,7 @@ logfile='/var/log/elabftw.log'
 ###############################################################
 
 manpage='/usr/man/man1/elabctl.1.gz'
-version='0.1.2'
+version='0.2.0'
 
 function backup()
 {
