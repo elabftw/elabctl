@@ -17,15 +17,6 @@ logfile='/var/log/elabftw.log'
 manpage='/usr/man/man1/elabctl.1.gz'
 version='0.1.2'
 
-# exit if variable isn't set
-set -u
-
-# root only
-if [ $EUID != 0 ];then
-    echo "Only the root account can use this script."
-    exit 1
-fi
-
 function backup()
 {
     if ! $(ls -A $backupdir > /dev/null 2>&1); then
@@ -103,7 +94,7 @@ function getDistrib()
             wget -q http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm -O /tmp/epel.rpm
             rpm -ivh /tmp/epel.rpm
         elif [ "$ID" == "arch" ]; then
-            PACMAN="pacman -Sy"
+            PACMAN="pacman -Sy --noconfirm"
         elif [ "$ID" == "opensuse" ]; then
             PACMAN="zypper -n install"
         else
@@ -168,17 +159,30 @@ function install()
     rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
     pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 
+    set +e
     ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
+    # dns requests might be blocked
+    if [ $? != 0 ]; then
+        # let's try to get the local IP with ip
+        if $(hash ip 2>/dev/null); then
+            ip=$(ip -4 addr | grep 'state UP' -A2| grep inet| awk '{print $2}' | cut -f1 -d'/'|head -n1)
+        else
+            ip="localhost"
+        fi
+    fi
+    set -e
+
     hasdomain='n'
     domain=$ip
     title="Install eLabFTW"
     backtitle="eLabFTW installation"
 
+    set +e
+
     # welcome screen
     dialog --backtitle "$backtitle" --title "$title" --msgbox "\nWelcome to the install of eLabFTW :)\n
     This script will automatically install eLabFTW in a Docker container." 0 0
 
-    set +e
     # get info for letsencrypt and nginx
     dialog --backtitle "$backtitle" --title "$title" --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached using a domain name. In this case a proper SSL certificate will be requested from Let's Encrypt.\n\nAnswer no if you can only reach this server using an IP address. In this case a self-signed certificate will be used." 0 0
     if [ $? -eq 0 ]
@@ -209,9 +213,14 @@ function install()
     sleep 1
 
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Grabbing the docker-compose configuration file" 20 80
+    # make a copy of an existing conf file
+    if [ -e $conffile ]; then
+        echo 55 | dialog --backtitle "$backtitle" --title "$title" --gauge "Making a copy of the existing configuration file." 20 80
+        \cp $conffile $conffile.old
+    fi
+
     wget -q https://raw.githubusercontent.com/elabftw/docker-elabftw/master/src/docker-compose.yml-EXAMPLE -O $conffile
     sleep 1
-
 
     # elab config
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Adjusting configuration" 20 80
@@ -313,9 +322,32 @@ function version()
     echo "elabctl version $version"
 }
 
-if [ $# -eq 1 ];
-then
+# SCRIPT BEGIN
+
+# root only
+if [ $EUID != 0 ]; then
+    echo "Only the root account can use this script."
+    exit 1
+fi
+
+# check arguments
+if [ $# != 1 ]; then
+    help
+    exit 1
+fi
+
+# available commands
+declare -A commands
+for valid in backup install logs php-logs self-update start status stop restart update usage version
+do
+    commands[$valid]=1
+done
+
+if [[ ${commands[$1]} ]]; then
+    # exit if variable isn't set
+    set -u
     $1
 else
     help
+    exit 1
 fi
