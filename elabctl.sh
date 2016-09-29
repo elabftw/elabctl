@@ -81,20 +81,27 @@ function getDistrib()
         . /etc/os-release
 
         # pacman = package manager
+
+        # DEBIAN / UBUNTU
         if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
             PACMAN="apt-get -y install"
+
+        # FEDORA
         elif [ "$ID" == "fedora" ]; then
             PACMAN="dnf -y install"
-        elif [ "$ID" == "centos" ]; then
+
+        # RED HAT / CENTOS
+        elif [ "$ID" == "centos" ] || [ "$ID" == "rhel" ]; then
             PACMAN="yum -y install"
+            # we need this to install python-pip
             wget -q http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm -O /tmp/epel.rpm
             rpm -ivh /tmp/epel.rpm
-        elif [ "$ID" == "rhel" ]; then
-            PACMAN="yum -y install"
-            wget -q http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm -O /tmp/epel.rpm
-            rpm -ivh /tmp/epel.rpm
+
+        # ARCH IS THE BEST
         elif [ "$ID" == "arch" ]; then
             PACMAN="pacman -Sy --noconfirm"
+
+        # OPENSUSE
         elif [ "$ID" == "opensuse" ]; then
             PACMAN="zypper -n install"
         else
