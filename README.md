@@ -1,7 +1,7 @@
 # elabctl.sh
 
-This script is used to manage an eLabFTW installation on a drop.
-See the main [documentation](https://elabftw.readthedocs.io/en/hypernext/install-drop.html).
+This script is used to manage an eLabFTW installation.
+See the main [documentation](https://elabftw.readthedocs.io/).
 
 ## Install
 
