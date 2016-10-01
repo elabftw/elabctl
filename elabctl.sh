@@ -108,6 +108,9 @@ function getDistrib()
             echo "What distribution are you running? Please open a github issue!"
             exit 1
         fi
+    else
+        echo "Could not load /etc/os-release to guess distribution. Please open a github issue!"
+        exit 1
     fi
 }
 
