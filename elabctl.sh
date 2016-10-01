@@ -47,6 +47,7 @@ function backup()
 function getDeps()
 {
     if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
+        echo "Synchronizing packages index. Please wait…"
         apt-get update >> $logfile 2>&1
     fi
 
