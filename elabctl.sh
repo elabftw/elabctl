@@ -130,15 +130,17 @@ function help()
     Commands:
 
         backup          Backup your installation
+        help            Show this text
         install         Install eLabFTW and start the containers
         logs            Show logs of the containers
         php-logs        Show last 15 lines of nginx error log
+        restart         Restart the containers
         self-update     Update the elabctl script
         status          Show status of running containers
         start           Start the containers
         stop            Stop the containers
-        restart         Restart the containers
         update          Get the latest version of the containers
+        version         Display elabctl version
 
     See 'man elabctl' for more informations."
 }
@@ -348,7 +350,7 @@ fi
 
 # available commands
 declare -A commands
-for valid in backup install logs php-logs self-update start status stop restart update usage version
+for valid in backup help install logs php-logs self-update start status stop restart update usage version
 do
     commands[$valid]=1
 done
