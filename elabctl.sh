@@ -132,7 +132,7 @@ function help()
 
         backup          Backup your installation
         help            Show this text
-        install         Install eLabFTW and start the containers
+        install         Configure and install required components
         logs            Show logs of the containers
         php-logs        Show last 15 lines of nginx error log
         restart         Restart the containers

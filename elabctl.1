@@ -5,9 +5,10 @@ elabctl \- manage an eLabFTW installation
 .SH SYNOPSIS
 .B elabctl \fI[COMMAND]
 .TP
-.B elabctl help
+.B elabctl \fIhelp
 .SH DESCRIPTION
-elabctl allows you to install, backup, monitor and update easily eLabFTW.
+.B elabctl
+allows you to install, backup, monitor and update easily eLabFTW.
 .SH COMMANDS
 .BR backup
 Make a backup of your installation in /var/backups/elabftw.
@@ -16,7 +17,10 @@ Make a backup of your installation in /var/backups/elabftw.
 Display available commands
 .TP
 .BR install
-Install eLabFTW and start the Docker containers
+Configure eLabFTW interactively. It will install Pip, a python package manager,
+used to install docker-compose. It will also prepare the docker-compose
+configuration file /etc/elabftw.yml and get the TLS certificates from
+Let's Encrypt if possible.
 .TP
 .BR logs
 Show logs of the mysql and eLabFTW containers
@@ -28,7 +32,9 @@ Show the last 15 lines of /var/log/nginx/error.log from the container
 Restart the containers
 .TP
 .BR self-update
-Fetch the latest version of the elabctl script and save it in /usr/bin.
+Fetch the latest version of the
+.B elabctl
+script and save it in /usr/bin.
 .TP
 .BR start
 Start the containers
