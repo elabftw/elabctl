@@ -1,34 +1,34 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # http://www.elabftw.net
 
 ###############################################################
 # CONFIGURATION
 # where do you want your backups to end up?
-backupdir='/var/backups/elabftw'
+BACKUP_DIR='/var/backups/elabftw'
 # where do we store the config file?
-conffile='/etc/elabftw.yml'
+CONF_FILE='/etc/elabftw.yml'
 # where do we store the MySQL database and the uploaded files?
-datadir='/var/elabftw'
+DATA_DIR='/var/elabftw'
 # where do we store the logs?
-logfile='/var/log/elabftw.log'
+LOG_FILE='/var/log/elabftw.log'
 # END CONFIGURATION
 ###############################################################
 
-manpage='/usr/man/man1/elabctl.1.gz'
-version='0.2.0'
+MAN_FILE='/usr/man/man1/elabctl.1.gz'
+VERSION='0.2.1'
 
 function backup()
 {
-    if ! $(ls -A $backupdir > /dev/null 2>&1); then
-        mkdir -p $backupdir
+    if ! $(ls -A $BACKUP_DIR > /dev/null 2>&1); then
+        mkdir -p $BACKUP_DIR
     fi
 
     set -e
 
     # get clean date
     date=$(date --iso-8601) # 2016-02-10
-    zipfile="$backupdir/uploaded_files-$date.zip"
-    dumpfile="$backupdir/mysql_dump-$date.sql"
+    zipfile="$BACKUP_DIR/uploaded_files-$date.zip"
+    dumpfile="$BACKUP_DIR/mysql_dump-$date.sql"
 
     # dump sql
     docker exec -it mysql bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql $MYSQL_DATABASE' > /dev/null 2>&1
@@ -37,18 +37,18 @@ function backup()
     # compress it to the max
     gzip -f --best $dumpfile
     # make a zip of the uploads folder
-    zip -rq $zipfile $datadir/web -x $datadir/web/tmp\*
+    zip -rq $zipfile $DATA_DIR/web -x $DATA_DIR/web/tmp\*
     # add the config file
-    zip -rq $zipfile $conffile
+    zip -rq $zipfile $CONF_FILE
 
-    echo "Done. Copy $backupdir over to another computer."
+    echo "Done. Copy $BACKUP_DIR over to another computer."
 }
 
 function getDeps()
 {
     if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
         echo "Synchronizing packages index. Please wait…"
-        apt-get update >> $logfile 2>&1
+        apt-get update >> $LOG_FILE 2>&1
     fi
 
     if ! $(hash dialog 2>/dev/null); then
@@ -118,7 +118,7 @@ function getDistrib()
 # install manpage
 function getMan()
 {
-    wget -qO- https://github.com/elabftw/drop-elabftw/raw/master/elabctl.1.gz > /usr/share/man/man1/elabctl.1.gz
+    wget -qO- https://github.com/elabftw/drop-elabftw/raw/master/elabctl.1.gz > $MANFILE
 }
 
 function help()
@@ -153,13 +153,13 @@ function init()
     getMan
 }
 
-# install elabftw
+# install pip and docker-compose, get elabftw.yml and configure it with sed
 function install()
 {
-    mkdir -p $datadir
+    mkdir -p $DATA_DIR
 
-    if [ "$(ls -A $datadir)" ]; then
-        echo "It looks like eLabFTW is already installed. Delete the $datadir folder to reinstall."
+    if [ "$(ls -A $DATA_DIR)" ]; then
+        echo "It looks like eLabFTW is already installed. Delete the $DATA_DIR folder to reinstall."
         exit 1
     fi
 
@@ -214,53 +214,53 @@ function install()
     set -e
 
     echo 10 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing python-pip" 20 80
-    install-pkg python-pip >> $logfile 2>&1
+    install-pkg python-pip >> $LOG_FILE 2>&1
 
     echo 30 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing docker-compose" 20 80
     # make sure we have the latest pip version
-    pip install --upgrade pip >> $logfile 2>&1
-    pip install -U docker-compose >> $logfile 2>&1
+    pip install --upgrade pip >> $LOG_FILE 2>&1
+    pip install --upgrade docker-compose >> $LOG_FILE 2>&1
 
     echo 40 | dialog --backtitle "$backtitle" --title "$title" --gauge "Creating folder structure" 20 80
-    mkdir -pvm 777 $datadir/{web,mysql} >> $logfile 2>&1
+    mkdir -pvm 777 $DATA_DIR/{web,mysql} >> $LOG_FILE 2>&1
     sleep 1
 
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Grabbing the docker-compose configuration file" 20 80
     # make a copy of an existing conf file
-    if [ -e $conffile ]; then
+    if [ -e $CONF_FILE ]; then
         echo 55 | dialog --backtitle "$backtitle" --title "$title" --gauge "Making a copy of the existing configuration file." 20 80
-        \cp $conffile $conffile.old
+        \cp $CONF_FILE $CONF_FILE.old
     fi
 
-    wget -q https://raw.githubusercontent.com/elabftw/docker-elabftw/master/src/docker-compose.yml-EXAMPLE -O $conffile
+    wget -q https://raw.githubusercontent.com/elabftw/docker-elabftw/master/src/docker-compose.yml-EXAMPLE -O $CONF_FILE
     sleep 1
 
     # elab config
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Adjusting configuration" 20 80
-    secret_key=$(curl -s https://demo.elabftw.net/install/generateSecretKey.php)
-    sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" $conffile
-    sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$domain/" $conffile
+    secret_key=$(curl --silent https://demo.elabftw.net/install/generateSecretKey.php)
+    sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" $CONF_FILE
+    sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$domain/" $CONF_FILE
 
     # enable letsencrypt
     if [ $hasdomain == 'y' ]
     then
-        sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" $conffile
-        sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" $conffile
+        sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" $CONF_FILE
+        sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" $CONF_FILE
     fi
 
     # mysql config
-    sed -i -e "s/MYSQL_ROOT_PASSWORD=secr3t/MYSQL_ROOT_PASSWORD=$rootpass/" $conffile
-    sed -i -e "s/MYSQL_PASSWORD=secr3t/MYSQL_PASSWORD=$pass/" $conffile
-    sed -i -e "s/DB_PASSWORD=secr3t/DB_PASSWORD=$pass/" $conffile
+    sed -i -e "s/MYSQL_ROOT_PASSWORD=secr3t/MYSQL_ROOT_PASSWORD=$rootpass/" $CONF_FILE
+    sed -i -e "s/MYSQL_PASSWORD=secr3t/MYSQL_PASSWORD=$pass/" $CONF_FILE
+    sed -i -e "s/DB_PASSWORD=secr3t/DB_PASSWORD=$pass/" $CONF_FILE
 
     sleep 1
 
     if  [ $hasdomain == 'y' ]
     then
         echo 60 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing letsencrypt in /letsencrypt" 20 80
-        git clone --depth 1 -b master https://github.com/letsencrypt/letsencrypt $datadir/letsencrypt >> $logfile 2>&1
+        git clone --depth 1 --branch master https://github.com/letsencrypt/letsencrypt $DATA_DIR/letsencrypt >> $LOG_FILE 2>&1
         echo 70 | dialog --backtitle "$backtitle" --title "$title" --gauge "Getting the SSL certificate" 20 80
-        cd $datadir/letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
+        cd $DATA_DIR/letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
     fi
 
     dialog --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
@@ -269,16 +269,16 @@ function install()
     ====> Go to https://$domain/install once started!\n\n
     In the mean time, check out what to do after an install:\n
     ====> https://elabftw.readthedocs.io/en/hypernext/postinstall.html\n\n
-    The log file of the install is here: $logfile\n
-    The configuration file for docker-compose is here: $conffile\n
-    Your data folder is: $datadir. It contains the MySQL database and uploaded files.\n
+    The log file of the install is here: $LOG_FILE\n
+    The configuration file for docker-compose is here: $CONF_FILE\n
+    Your data folder is: $DATA_DIR. It contains the MySQL database and uploaded files.\n
     You can use 'docker logs -f elabftw' to follow the starting up of the container.\n
     See 'man elabctl' to backup or update." 20 80
 }
 
 function install-pkg()
 {
-    $PACMAN $1 >> $logfile 2>&1
+    $PACMAN $1 >> $LOG_FILE 2>&1
 }
 
 function logs()
@@ -306,7 +306,7 @@ function self-update()
 
 function start()
 {
-    docker-compose -f $conffile up -d
+    docker-compose -f $CONF_FILE up -d
 }
 
 function status()
@@ -316,12 +316,12 @@ function status()
 
 function stop()
 {
-    docker-compose -f $conffile down
+    docker-compose -f $CONF_FILE down
 }
 
 function update()
 {
-    docker-compose -f $conffile pull
+    docker-compose -f $CONF_FILE pull
     restart
 }
 
@@ -332,7 +332,7 @@ function usage()
 
 function version()
 {
-    echo "elabctl version $version"
+    echo "elabctl version $VERSION"
 }
 
 # SCRIPT BEGIN
