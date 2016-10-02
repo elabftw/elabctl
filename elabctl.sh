@@ -14,7 +14,7 @@ LOG_FILE='/var/log/elabftw.log'
 # END CONFIGURATION
 ###############################################################
 
-MAN_FILE='/usr/man/man1/elabctl.1.gz'
+MAN_FILE='/usr/share/man/man1/elabctl.1.gz'
 VERSION='0.2.1'
 
 function backup()
