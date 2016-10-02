@@ -118,7 +118,7 @@ function getDistrib()
 # install manpage
 function getMan()
 {
-    wget -qO- https://github.com/elabftw/drop-elabftw/raw/master/elabctl.1.gz > $MANFILE
+    wget -qO- https://github.com/elabftw/drop-elabftw/raw/master/elabctl.1.gz > $MAN_FILE
 }
 
 function help()
