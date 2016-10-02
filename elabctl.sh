@@ -4,24 +4,25 @@
 ###############################################################
 # CONFIGURATION
 # where do you want your backups to end up?
-BACKUP_DIR='/var/backups/elabftw'
+declare -r BACKUP_DIR='/var/backups/elabftw'
 # where do we store the config file?
-CONF_FILE='/etc/elabftw.yml'
+declare -r CONF_FILE='/etc/elabftw.yml'
 # where do we store the MySQL database and the uploaded files?
-DATA_DIR='/var/elabftw'
+declare -r DATA_DIR='/var/elabftw'
 # where do we store the logs?
-LOG_FILE='/var/log/elabftw.log'
+declare -r LOG_FILE='/var/log/elabftw.log'
 # END CONFIGURATION
 ###############################################################
 
-MAN_FILE='/usr/share/man/man1/elabctl.1.gz'
-VERSION='0.2.1'
+declare -r MAN_FILE='/usr/share/man/man1/elabctl.1.gz'
+declare -r VERSION='0.2.1'
 
 # display ascii logo
 function ascii()
 {
     clear
     echo ""
+    echo "       _         _       __  _             "
     echo "  ___ | |  ____ | |__   / _|| |_ __      __"
     echo " / _ \| | / _ ||| |_ \ | |_ | __|\ \ /\ / /"
     echo "|  __/| || (_| || |_) ||  _|| |_  \ V  V / "
