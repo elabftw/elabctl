@@ -300,8 +300,10 @@ function restart()
 
 function self-update()
 {
-    wget -qO- https://raw.githubusercontent.com/elabftw/drop-elabftw/master/elabctl.sh > /usr/bin/elabctl && chmod +x /usr/bin/elabctl
     getMan
+    wget -qO- https://raw.githubusercontent.com/elabftw/drop-elabftw/master/elabctl.sh > /tmp/elabctl
+    chmod +x /tmp/elabctl
+    mv /tmp/elabctl /usr/bin/elabctl
 }
 
 function start()
