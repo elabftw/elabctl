@@ -154,6 +154,7 @@ function help()
         status          Show status of running containers
         start           Start the containers
         stop            Stop the containers
+        uninstall       Uninstall eLabFTW and purge data
         update          Get the latest version of the containers
         version         Display elabctl version
 
@@ -323,7 +324,7 @@ function self-update()
 
 function start()
 {
-    docker-compose -f $CONF_FILE up -d
+    docker-compose -f "$CONF_FILE" up -d
 }
 
 function status()
@@ -333,12 +334,76 @@ function status()
 
 function stop()
 {
-    docker-compose -f $CONF_FILE down
+    docker-compose -f "$CONF_FILE" down
+}
+
+function uninstall()
+{
+    stop
+
+    local -r backtitle="eLabFTW uninstall"
+    local title="Uninstall"
+    dialog --backtitle "$backtitle" --title "$title" --yesno "\nWarning! You are about to delete everything related to eLabFTW on this computer!\n\nThere is no 'go back' button. Are you sure you want to do this?\n" 0 0
+    title="(O)"
+    dialog --backtitle "$backtitle" --title "$title" --msgbox "\nDave, stop.\n" 0 0
+    dialog --backtitle "$backtitle" --title "$title" --msgbox "\nStop, will you?\n" 0 0
+    dialog --backtitle "$backtitle" --title "$title" --msgbox "\nStop, Dave.\n" 0 0
+    dialog --backtitle "$backtitle" --title "$title" --msgbox "\nWill you stop, Dave?\n" 0 0
+    dialog --backtitle "$backtitle" --title "$title" --msgbox "\nStop, Dave. I'm afraid.\n" 0 0
+
+    clear
+    echo "Removing everything in 10 seconds."
+    echo "Press Ctrl-C now to abort!"
+    for i in {10..1}
+    do
+        echo -n "${i}..."
+        sleep 1
+    done
+    echo ""
+
+    # remove man page
+    if [ -f "$MAN_FILE" ]; then
+        rm -f "$MAN_FILE"
+        echo "[x] Deleted $MAN_FILE"
+    fi
+
+    # remove config file and eventual backup
+    if [ -f "${CONF_FILE}.old" ]; then
+        rm -f "${CONF_FILE}.old"
+        echo "[x] Deleted ${CONF_FILE}.old"
+    fi
+    if [ -f "$CONF_FILE" ]; then
+        rm -f "$CONF_FILE"
+        echo "[x] Deleted $CONF_FILE"
+    fi
+    # remove logfile
+    if [ -f "$LOG_FILE" ]; then
+        rm -f "$LOG_FILE"
+        echo "[x] Deleted $LOG_FILE"
+    fi
+    # remove data directory
+    if [ -d "$DATA_DIR" ]; then
+        rm -rf "$DATA_DIR"
+        echo "[x] Deleted $DATA_DIR"
+    fi
+    # remove backup dir
+    if [ -d "$BACKUP_DIR" ]; then
+        rm -rf "$BACKUP_DIR"
+        echo "[x] Deleted $BACKUP_DIR"
+    fi
+
+    # remove containers and images
+    docker rm elabftw || true
+    docker rm mysql || true
+    docker rmi elabftw/docker-elabftw || true
+    docker rmi mysql:5.7 || true
+
+    echo "Everything has been obliterated. Have a nice day :)"
 }
 
 function update()
 {
-    docker-compose -f $CONF_FILE pull
+    docker-compose -f "$CONF_FILE" pull
     restart
 }
 
@@ -368,7 +433,7 @@ fi
 
 # available commands
 declare -A commands
-for valid in backup help install logs php-logs self-update start status stop restart update usage version
+for valid in backup help install logs php-logs self-update start status stop restart uninstall update usage version
 do
     commands[$valid]=1
 done
