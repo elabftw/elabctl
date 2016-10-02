@@ -40,9 +40,9 @@ function backup()
     set -e
 
     # get clean date
-    date=$(date --iso-8601) # 2016-02-10
-    zipfile="${BACKUP_DIR}/uploaded_files-${date}.zip"
-    dumpfile="${BACKUP_DIR}/mysql_dump-${date}.sql"
+    local -r date=$(date --iso-8601) # 2016-02-10
+    local -r zipfile="${BACKUP_DIR}/uploaded_files-${date}.zip"
+    local -r dumpfile="${BACKUP_DIR}/mysql_dump-${date}.sql"
 
     # dump sql
     docker exec -it mysql bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql $MYSQL_DATABASE' > /dev/null 2>&1
