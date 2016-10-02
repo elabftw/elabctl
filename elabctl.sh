@@ -40,8 +40,8 @@ function backup()
 
     # get clean date
     date=$(date --iso-8601) # 2016-02-10
-    zipfile="$BACKUP_DIR/uploaded_files-$date.zip"
-    dumpfile="$BACKUP_DIR/mysql_dump-$date.sql"
+    zipfile="${BACKUP_DIR}/uploaded_files-${date}.zip"
+    dumpfile="${BACKUP_DIR}/mysql_dump-${date}.sql"
 
     # dump sql
     docker exec -it mysql bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql $MYSQL_DATABASE' > /dev/null 2>&1
@@ -50,11 +50,11 @@ function backup()
     # compress it to the max
     gzip -f --best $dumpfile
     # make a zip of the uploads folder
-    zip -rq $zipfile $DATA_DIR/web -x $DATA_DIR/web/tmp\*
+    zip -rq $zipfile ${DATA_DIR}/web -x ${DATA_DIR}/web/tmp\*
     # add the config file
     zip -rq $zipfile $CONF_FILE
 
-    echo "Done. Copy $BACKUP_DIR over to another computer."
+    echo "Done. Copy ${BACKUP_DIR} over to another computer."
 }
 
 function getDeps()
@@ -173,7 +173,7 @@ function install()
     mkdir -p $DATA_DIR
 
     if [ "$(ls -A $DATA_DIR)" ]; then
-        echo "It looks like eLabFTW is already installed. Delete the $DATA_DIR folder to reinstall."
+        echo "It looks like eLabFTW is already installed. Delete the ${DATA_DIR} folder to reinstall."
         exit 1
     fi
 
@@ -236,14 +236,14 @@ function install()
     pip install --upgrade docker-compose >> $LOG_FILE 2>&1
 
     echo 40 | dialog --backtitle "$backtitle" --title "$title" --gauge "Creating folder structure" 20 80
-    mkdir -pvm 777 $DATA_DIR/{web,mysql} >> $LOG_FILE 2>&1
+    mkdir -pvm 777 ${DATA_DIR}/{web,mysql} >> $LOG_FILE 2>&1
     sleep 1
 
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Grabbing the docker-compose configuration file" 20 80
     # make a copy of an existing conf file
     if [ -e $CONF_FILE ]; then
         echo 55 | dialog --backtitle "$backtitle" --title "$title" --gauge "Making a copy of the existing configuration file." 20 80
-        \cp $CONF_FILE $CONF_FILE.old
+        \cp $CONF_FILE ${CONF_FILE}.old
     fi
 
     wget -q https://raw.githubusercontent.com/elabftw/docker-elabftw/master/src/docker-compose.yml-EXAMPLE -O $CONF_FILE
@@ -272,9 +272,9 @@ function install()
     if  [ $hasdomain == 'y' ]
     then
         echo 60 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing letsencrypt in /letsencrypt" 20 80
-        git clone --depth 1 --branch master https://github.com/letsencrypt/letsencrypt $DATA_DIR/letsencrypt >> $LOG_FILE 2>&1
+        git clone --depth 1 --branch master https://github.com/letsencrypt/letsencrypt ${DATA_DIR}/letsencrypt >> $LOG_FILE 2>&1
         echo 70 | dialog --backtitle "$backtitle" --title "$title" --gauge "Getting the SSL certificate" 20 80
-        cd $DATA_DIR/letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
+        cd ${DATA_DIR}/letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
     fi
 
     dialog --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
@@ -285,7 +285,7 @@ function install()
     ====> https://elabftw.readthedocs.io/en/hypernext/postinstall.html\n\n
     The log file of the install is here: $LOG_FILE\n
     The configuration file for docker-compose is here: $CONF_FILE\n
-    Your data folder is: $DATA_DIR. It contains the MySQL database and uploaded files.\n
+    Your data folder is: ${DATA_DIR}. It contains the MySQL database and uploaded files.\n
     You can use 'docker logs -f elabftw' to follow the starting up of the container.\n
     See 'man elabctl' to backup or update." 20 80
 }
