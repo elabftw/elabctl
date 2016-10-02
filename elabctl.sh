@@ -17,6 +17,19 @@ LOG_FILE='/var/log/elabftw.log'
 MAN_FILE='/usr/share/man/man1/elabctl.1.gz'
 VERSION='0.2.1'
 
+# display ascii logo
+function ascii()
+{
+    clear
+    echo ""
+    echo "  ___ | |  ____ | |__   / _|| |_ __      __"
+    echo " / _ \| | / _ ||| |_ \ | |_ | __|\ \ /\ / /"
+    echo "|  __/| || (_| || |_) ||  _|| |_  \ V  V / "
+    echo " \___||_| \__,_||_.__/ |_|   \__|  \_/\_/  "
+    echo ""
+}
+
+# create a mysqldump and a zip archive of the uploaded files
 function backup()
 {
     if ! $(ls -A $BACKUP_DIR > /dev/null 2>&1); then
@@ -148,6 +161,7 @@ function help()
 
 function init()
 {
+    ascii
     getDistrib
     getDeps
     getMan
