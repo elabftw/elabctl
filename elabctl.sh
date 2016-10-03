@@ -230,15 +230,17 @@ function install()
     set -e
 
     echo 10 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing python-pip" 20 80
-    install-pkg python-pip >> $LOG_FILE 2>&1
+    install-pkg python-pip >> "$LOG_FILE" 2>&1
 
     echo 30 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing docker-compose" 20 80
     # make sure we have the latest pip version
-    pip install --upgrade pip >> $LOG_FILE 2>&1
-    pip install --upgrade docker-compose >> $LOG_FILE 2>&1
+    pip install --upgrade pip >> "$LOG_FILE" 2>&1
+    pip install --upgrade docker-compose >> "$LOG_FILE" 2>&1
 
     echo 40 | dialog --backtitle "$backtitle" --title "$title" --gauge "Creating folder structure" 20 80
-    mkdir -pvm 777 ${DATA_DIR}/{web,mysql} >> $LOG_FILE 2>&1
+    mkdir -pvm 700 ${DATA_DIR}/{web,mysql} >> "$LOG_FILE" 2>&1
+    chown -v 999:999 ${DATA_DIR}/mysql >> "$LOG_FILE" 2>&1
+    chown -v 100:101 ${DATA_DIR}/web >> "$LOG_FILE" 2>&1
     sleep 1
 
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Grabbing the docker-compose configuration file" 20 80
@@ -392,13 +394,12 @@ function uninstall()
         echo "[x] Deleted $BACKUP_DIR"
     fi
 
-    # remove containers and images
-    docker rm elabftw || true
-    docker rm mysql || true
+    # remove docker images
     docker rmi elabftw/docker-elabftw || true
     docker rmi mysql:5.7 || true
 
-    echo "Everything has been obliterated. Have a nice day :)"
+    echo ""
+    echo "[✓] Everything has been obliterated. Have a nice day :)"
 }
 
 function update()
