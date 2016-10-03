@@ -15,7 +15,7 @@ declare -r LOG_FILE='/var/log/elabftw.log'
 ###############################################################
 
 declare -r MAN_FILE='/usr/share/man/man1/elabctl.1.gz'
-declare -r VERSION='0.2.1'
+declare -r ELAB_VERSION='0.2.1'
 
 # display ascii logo
 function ascii()
@@ -415,7 +415,7 @@ function usage()
 
 function version()
 {
-    echo "elabctl version $VERSION"
+    echo "elabctl version $ELAB_VERSION"
 }
 
 # SCRIPT BEGIN
