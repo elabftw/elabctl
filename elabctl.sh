@@ -84,6 +84,12 @@ function getDeps()
         echo "Installing prerequisite package: bind-utils. Please wait…"
         install-pkg bind-utils
     fi
+
+    if ! $(hash git 2>/dev/null); then
+        echo "Installing prerequisite package: git. Please wait…"
+        install-pkg git
+    fi
+
 }
 
 function getDistrib()
