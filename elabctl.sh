@@ -290,12 +290,12 @@ function install()
         cd ${DATA_DIR}/letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
     fi
 
-    dialog --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
-    You can start the containers with: elabctl start\n\n
+    dialog --colors --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
+    \Z1====>\Zn Start the containers with: \Zb\Z4elabctl start\Zn\n\n
     It will take a minute or two to run at first.\n\n
-    ====> Go to https://$domain/install once started!\n\n
+    \Z1====>\Zn Go to https://$domain/\Zb\Z4install\Zn once started!\n\n
     In the mean time, check out what to do after an install:\n
-    ====> https://elabftw.readthedocs.io/en/hypernext/postinstall.html\n\n
+    \Z1====>\Zn https://elabftw.readthedocs.io/en/hypernext/postinstall.html\n\n
     The log file of the install is here: $LOG_FILE\n
     The configuration file for docker-compose is here: $CONF_FILE\n
     Your data folder is: ${DATA_DIR}. It contains the MySQL database and uploaded files.\n
