@@ -33,8 +33,8 @@ function ascii()
 # create a mysqldump and a zip archive of the uploaded files
 function backup()
 {
-    if ! $(ls -A $BACKUP_DIR > /dev/null 2>&1); then
-        mkdir -p $BACKUP_DIR
+    if ! $(ls -A "${BACKUP_DIR}" > /dev/null 2>&1); then
+        mkdir -p "${BACKUP_DIR}"
     fi
 
     set -e
@@ -55,7 +55,7 @@ function backup()
     # add the config file
     zip -rq $zipfile $CONF_FILE
 
-    echo "Done. Copy ${BACKUP_DIR} over to another computer."
+    echo "Done. Copy "${BACKUP_DIR}" over to another computer."
 }
 
 function getDeps()
@@ -352,23 +352,32 @@ function uninstall()
 
     local -r backtitle="eLabFTW uninstall"
     local title="Uninstall"
+
+    set +e
+
     dialog --backtitle "$backtitle" --title "$title" --yesno "\nWarning! You are about to delete everything related to eLabFTW on this computer!\n\nThere is no 'go back' button. Are you sure you want to do this?\n" 0 0
-    title="(O)"
-    dialog --backtitle "$backtitle" --title "$title" --msgbox "\nDave, stop.\n" 0 0
-    dialog --backtitle "$backtitle" --title "$title" --msgbox "\nStop, will you?\n" 0 0
-    dialog --backtitle "$backtitle" --title "$title" --msgbox "\nStop, Dave.\n" 0 0
-    dialog --backtitle "$backtitle" --title "$title" --msgbox "\nWill you stop, Dave?\n" 0 0
-    dialog --backtitle "$backtitle" --title "$title" --msgbox "\nStop, Dave. I'm afraid.\n" 0 0
+    if [ $? != 0 ]; then
+        exit 1
+    fi
+
+    dialog --backtitle "$backtitle" --title "$title" --yesno "\nDo you want to delete the backups, too?" 0 0
+    if [ $? -eq 0 ]; then
+        rmbackup='y'
+    else
+        rmbackup='n'
+    fi
+
+    #dialog --backtitle "$backtitle" --title "$title" --msgbox "\nDave, stop.\n" 0 0
+    #dialog --backtitle "$backtitle" --title "$title" --msgbox "\nStop, will you?\n" 0 0
+    #dialog --backtitle "$backtitle" --title "$title" --msgbox "\nStop, Dave.\n" 0 0
+    #dialog --backtitle "$backtitle" --title "$title" --msgbox "\nWill you stop, Dave?\n" 0 0
+    #dialog --backtitle "$backtitle" --title "$title" --msgbox "\nStop, Dave. I'm afraid.\n" 0 0
+    dialog --backtitle "$backtitle" --title "$title" --pause "\nRemoving everything in 10 seconds. Stop now you fool!\n" 20 40 10
+    if [ $? != 0 ]; then
+        exit 1
+    fi
 
     clear
-    echo "Removing everything in 10 seconds."
-    echo "Press Ctrl-C now to abort!"
-    for i in {10..1}
-    do
-        echo -n "${i}..."
-        sleep 1
-    done
-    echo ""
 
     # remove man page
     if [ -f "$MAN_FILE" ]; then
@@ -396,7 +405,7 @@ function uninstall()
         echo "[x] Deleted $DATA_DIR"
     fi
     # remove backup dir
-    if [ -d "$BACKUP_DIR" ]; then
+    if [ $rmbackup == 'y' ] && [ -d "$BACKUP_DIR" ]; then
         rm -rf "$BACKUP_DIR"
         echo "[x] Deleted $BACKUP_DIR"
     fi
