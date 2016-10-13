@@ -438,7 +438,8 @@ function version()
 
 # root only
 if [ $EUID != 0 ]; then
-    echo "Only the root account can use this script."
+    echo "You don't have sufficient permissions. Try with:"
+    echo "sudo elabctl "$1""
     exit 1
 fi
 
