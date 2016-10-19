@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# http://www.elabftw.net
+# https://www.elabftw.net
 
 ###############################################################
 # CONFIGURATION
