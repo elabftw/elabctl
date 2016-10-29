@@ -139,7 +139,7 @@ function getDistrib()
 # install manpage
 function getMan()
 {
-    wget -qO- https://github.com/elabftw/drop-elabftw/raw/master/elabctl.1.gz > $MAN_FILE
+    wget -qO- https://github.com/elabftw/elabctl/raw/master/elabctl.1.gz > $MAN_FILE
 }
 
 function help()
@@ -295,7 +295,7 @@ function install()
     It will take a minute or two to run at first.\n\n
     \Z1====>\Zn Go to https://$domain/\Zb\Z4install\Zn once started!\n\n
     In the mean time, check out what to do after an install:\n
-    \Z1====>\Zn https://elabftw.readthedocs.io/en/hypernext/postinstall.html\n\n
+    \Z1====>\Zn https://elabftw.readthedocs.io/en/latest/postinstall.html\n\n
     The log file of the install is here: $LOG_FILE\n
     The configuration file for docker-compose is here: $CONF_FILE\n
     Your data folder is: ${DATA_DIR}. It contains the MySQL database and uploaded files.\n
@@ -328,7 +328,7 @@ function restart()
 function self-update()
 {
     getMan
-    wget -qO- https://raw.githubusercontent.com/elabftw/drop-elabftw/master/elabctl.sh > /tmp/elabctl
+    wget -qO- https://raw.githubusercontent.com/elabftw/elabctl/master/elabctl.sh > /tmp/elabctl
     chmod +x /tmp/elabctl
     mv /tmp/elabctl /usr/bin/elabctl
 }
