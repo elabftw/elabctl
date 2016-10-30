@@ -293,7 +293,7 @@ function install()
     dialog --colors --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
     \Z1====>\Zn Start the containers with: \Zb\Z4elabctl start\Zn\n\n
     It will take a minute or two to run at first.\n\n
-    \Z1====>\Zn Go to https://$domain/\Zb\Z4install\Zn once started!\n\n
+    \Z1====>\Zn Go to https://$domain once started!\n\n
     In the mean time, check out what to do after an install:\n
     \Z1====>\Zn https://elabftw.readthedocs.io/en/latest/postinstall.html\n\n
     The log file of the install is here: $LOG_FILE\n
