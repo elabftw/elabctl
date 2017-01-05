@@ -259,7 +259,7 @@ function install()
 
     wget -q https://raw.githubusercontent.com/elabftw/docker-elabftw/master/src/docker-compose.yml-EXAMPLE -O "$CONF_FILE"
     # setup restrictive permissions
-    chmod 700 "$CONF_FILE"
+    chmod 600 "$CONF_FILE"
     sleep 1
 
     # elab config
