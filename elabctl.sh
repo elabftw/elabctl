@@ -81,6 +81,10 @@ function getDeps()
     fi
 
     if ! $(hash dig 2>/dev/null); then
+        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ] || [ "$ID_LIKE" == "debian" ]; then
+        echo "Installing prerequisite package: dnsutils. Please wait…"
+        install-pkg dnsutils
+    else
         echo "Installing prerequisite package: bind-utils. Please wait…"
         install-pkg bind-utils
     fi
