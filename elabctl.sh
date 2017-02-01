@@ -60,7 +60,7 @@ function backup()
 
 function getDeps()
 {
-    if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ] || [ "$ID_LIKE" == "debian" ]; then
+    if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
         echo "Synchronizing packages index. Please wait…"
         apt-get update >> $LOG_FILE 2>&1
     fi
@@ -81,7 +81,7 @@ function getDeps()
     fi
 
     if ! $(hash dig 2>/dev/null); then
-        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ] || [ "$ID_LIKE" == "debian" ]; then
+        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
             echo "Installing prerequisite package: dnsutils. Please wait…"
             install-pkg dnsutils
         else
@@ -109,7 +109,7 @@ function getDistrib()
         # pacman = package manager
 
         # DEBIAN / UBUNTU
-        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ] || [ "$ID_LIKE" == "debian" ]; then
+        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
             PACMAN="apt-get -y install"
 
         # FEDORA
