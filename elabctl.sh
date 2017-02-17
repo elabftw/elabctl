@@ -262,7 +262,7 @@ function install()
         \cp $CONF_FILE ${CONF_FILE}.old
     fi
 
-    wget -q https://raw.githubusercontent.com/elabftw/docker-elabftw/master/src/docker-compose.yml-EXAMPLE -O "$CONF_FILE"
+    wget -q https://raw.githubusercontent.com/elabftw/elabimg/master/src/docker-compose.yml-EXAMPLE -O "$CONF_FILE"
     # setup restrictive permissions
     chmod 600 "$CONF_FILE"
     sleep 1
@@ -420,7 +420,7 @@ function uninstall()
     fi
 
     # remove docker images
-    docker rmi elabftw/docker-elabftw || true
+    docker rmi elabftw/elabimg || true
     docker rmi mysql:5.7 || true
 
     echo ""
