@@ -6,3 +6,5 @@
 * Fix running backup from cron (#6)
 * Use chmod 600 not 700 for config file
 * Allow traffic on port 443 with ufw
+* Add GPLv3 licence
+* Add CHANGELOG.md
