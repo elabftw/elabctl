@@ -28,6 +28,7 @@ function ascii()
     echo "|  __/| || (_| || |_) ||  _|| |_  \ V  V / "
     echo " \___||_| \__,_||_.__/ |_|   \__|  \_/\_/  "
     echo ""
+    echo "If something goes wrong, have a look at ${LOG_FILE}!"
 }
 
 # create a mysqldump and a zip archive of the uploaded files
