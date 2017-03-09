@@ -120,9 +120,10 @@ function getDistrib()
         elif [ "$ID" == "centos" ]; then
             PACMAN="yum -y install"
             # we need this to install python-pip
-            wget -q http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm -O /tmp/epel.rpm
+            #wget -q http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm -O /tmp/epel.rpm
             # add || true because if it's already installed the exit value is 1
-            rpm -ivh /tmp/epel.rpm || true
+            #rpm -ivh /tmp/epel.rpm || true
+            yum -y install epel-release || true
 
         # RED HAT
         elif [ "$ID" == "rhel" ]; then
