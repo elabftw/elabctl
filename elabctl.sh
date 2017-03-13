@@ -34,7 +34,7 @@ function ascii()
 # create a mysqldump and a zip archive of the uploaded files
 function backup()
 {
-    if ! $(ls -A "${BACKUP_DIR}" > /dev/null 2>&1); then
+    if ! ls -A "${BACKUP_DIR}" > /dev/null 2>&1; then
         mkdir -p "${BACKUP_DIR}"
     fi
 
@@ -48,15 +48,15 @@ function backup()
     # dump sql
     docker exec mysql bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql $MYSQL_DATABASE' > /dev/null 2>&1
     # copy it from the container to the host
-    docker cp mysql:dump.sql $dumpfile
+    docker cp mysql:dump.sql "$dumpfile"
     # compress it to the max
-    gzip -f --best $dumpfile
+    gzip -f --best "$dumpfile"
     # make a zip of the uploads folder
-    zip -rq $zipfile ${DATA_DIR}/web -x ${DATA_DIR}/web/tmp\*
+    zip -rq "$zipfile" ${DATA_DIR}/web -x ${DATA_DIR}/web/tmp\*
     # add the config file
-    zip -rq $zipfile $CONF_FILE
+    zip -rq "$zipfile" $CONF_FILE
 
-    echo "Done. Copy "${BACKUP_DIR}" over to another computer."
+    echo "Done. Copy ${BACKUP_DIR} over to another computer."
 }
 
 function getDeps()
@@ -66,22 +66,22 @@ function getDeps()
         apt-get update >> $LOG_FILE 2>&1
     fi
 
-    if ! $(hash dialog 2>/dev/null); then
+    if ! hash dialog 2>/dev/null; then
         echo "Installing prerequisite package: dialog. Please wait…"
         install-pkg dialog
     fi
 
-    if ! $(hash zip 2>/dev/null); then
+    if ! hash zip 2>/dev/null; then
         echo "Installing prerequisite package: zip. Please wait…"
         install-pkg zip
     fi
 
-    if ! $(hash wget 2>/dev/null); then
+    if ! hash wget 2>/dev/null; then
         echo "Installing prerequisite package: wget. Please wait…"
         install-pkg wget
     fi
 
-    if ! $(hash dig 2>/dev/null); then
+    if ! hash dig 2>/dev/null; then
         if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
             echo "Installing prerequisite package: dnsutils. Please wait…"
             install-pkg dnsutils
@@ -91,7 +91,7 @@ function getDeps()
         fi
     fi
 
-    if ! $(hash git 2>/dev/null); then
+    if ! hash git 2>/dev/null; then
         echo "Installing prerequisite package: git. Please wait…"
         install-pkg git
     fi
@@ -138,6 +138,12 @@ function getDistrib()
             echo "What distribution are you running? Please open a github issue!"
             exit 1
         fi
+    # for CentOS 6.8, see #368
+    elif grep -qi centos /etc/*-release
+    then
+        echo "It looks like you are using CentOS 6.8 which is using a very old kernel not compatible/stable with Docker. It is not recommended to use eLabFTW in Docker with this setup. Please have a look at the installation instructions without Docker."
+        exit 1
+
     else
         echo "Could not load /etc/os-release to guess distribution. Please open a github issue!"
         exit 1
@@ -208,7 +214,7 @@ function install()
     # dns requests might be blocked
     if [ $? != 0 ]; then
         # let's try to get the local IP with ip
-        if $(hash ip 2>/dev/null); then
+        if hash ip 2>/dev/null; then
             ip=$(ip -4 addr | grep 'state UP' -A2| grep inet| awk '{print $2}' | cut -f1 -d'/'|head -n1)
         else
             ip="localhost"
@@ -253,7 +259,8 @@ function install()
     pip install --upgrade docker-compose >> "$LOG_FILE" 2>&1
 
     echo 40 | dialog --backtitle "$backtitle" --title "$title" --gauge "Creating folder structure" 20 80
-    mkdir -pvm 700 ${DATA_DIR}/{web,mysql} >> "$LOG_FILE" 2>&1
+    mkdir -pv ${DATA_DIR}/{web,mysql} >> "$LOG_FILE" 2>&1
+    chmod -R 700 ${DATA_DIR} >> "$LOG_FILE" 2>&1
     chown -v 999:999 ${DATA_DIR}/mysql >> "$LOG_FILE" 2>&1
     chown -v 100:101 ${DATA_DIR}/web >> "$LOG_FILE" 2>&1
     sleep 1
@@ -297,7 +304,7 @@ function install()
         echo 65 | dialog --backtitle "$backtitle" --title "$title" --gauge "Allowing traffic on port 443" 20 80
         ufw allow 443/tcp || true
         echo 70 | dialog --backtitle "$backtitle" --title "$title" --gauge "Getting the SSL certificate" 20 80
-        cd ${DATA_DIR}/letsencrypt && ./letsencrypt-auto certonly --standalone --email $email --agree-tos -d $domain
+        cd ${DATA_DIR}/letsencrypt && ./letsencrypt-auto certonly --standalone --email "$email" --agree-tos -d "$domain"
     fi
 
     dialog --colors --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
@@ -315,7 +322,7 @@ function install()
 
 function install-pkg()
 {
-    $PACMAN $1 >> $LOG_FILE 2>&1
+    $PACMAN "$1" >> $LOG_FILE 2>&1
 }
 
 function logs()
@@ -447,7 +454,7 @@ function version()
 # root only
 if [ $EUID != 0 ]; then
     echo "You don't have sufficient permissions. Try with:"
-    echo "sudo elabctl "$1""
+    echo "sudo elabctl $1"
     exit 1
 fi
 
