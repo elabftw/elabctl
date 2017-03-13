@@ -3,56 +3,99 @@
 .SH NAME
 elabctl \- manage an eLabFTW installation
 .SH SYNOPSIS
-.B elabctl \fI[COMMAND]
+.B elabctl \fI[OPTION] \fI[COMMAND]
 .TP
-.B elabctl \fIhelp
+.B elabctl \fI--help
+.TP
+.B elabctl \fIbackup
 .SH DESCRIPTION
 .B elabctl
 allows you to install, backup, monitor and update easily eLabFTW.
+.SH OPTIONS
+.PP
+The following options are understood:
+.PP
+\fB\-h\fR, \fB\-\-help\fR
+.RS 4
+Display usage summary
+.RE
+.PP
+\fB\-v\fR, \fB\-\-version\fR
+.RS 4
+Display current version
 .SH COMMANDS
+.PP
+The following commands are understood:
+.PP
 .BR backup
-Make a backup of your installation in /var/backups/elabftw.
+.RS 4
+Make a backup of your installation in /var/backups/elabftw
+.RE
 .TP
 .BR help
+.RS 4
 Display available commands
+.RE
 .TP
 .BR install
+.RS 4
 Configure eLabFTW interactively. It will install Pip, a python package manager,
 used to install docker-compose. It will also prepare the docker-compose
 configuration file /etc/elabftw.yml and get the TLS certificates from
 Let's Encrypt if possible.
+.RE
 .TP
 .BR logs
+.RS 4
 Show logs of the mysql and eLabFTW containers
+.RE
 .TP
 .BR php-logs
+.RS 4
 Show the last 15 lines of /var/log/nginx/error.log from the container
+.RE
 .TP
 .BR restart
+.RS 4
 Restart the containers
+.RE
 .TP
 .BR self-update
+.RS 4
 Fetch the latest version of the
 .B elabctl
 script and save it in /usr/bin.
+.RE
 .TP
 .BR start
+.RS 4
 Start the containers
+.RE
 .TP
 .BR status
+.RS 4
 Show status of running containers
+.RE
 .TP
 .BR stop
+.RS 4
 Stop the containers
+.RE
 .TP
 .BR uninstall
+.RS 4
 Remove all trace of eLabFTW on this system. Will delete the containers, the images, the config file, the man page, the data directory, the backup directory and the log file.
+.RE
 .TP
 .BR update
+.RS 4
 Update to the latest version
+.RE
 .TP
 .BR version
+.RS 4
 Display current version
+.RE
 .SH BUGS
 No known bugs. But if you find one, make sure to tell me!
 .SH AUTHOR
