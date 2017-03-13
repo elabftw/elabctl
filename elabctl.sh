@@ -160,8 +160,10 @@ function help()
 {
     version
     echo "
-    Usage: elabctl [COMMAND]
-           elabctl [ help | version ]
+    Usage: elabctl [OPTION] [COMMAND]
+           elabctl [ --help | --version ]
+           elabctl install
+           elabctl backup
 
     Commands:
 
