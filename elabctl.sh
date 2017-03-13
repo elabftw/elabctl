@@ -15,7 +15,7 @@ declare -r LOG_FILE='/var/log/elabftw.log'
 ###############################################################
 
 declare -r MAN_FILE='/usr/share/man/man1/elabctl.1.gz'
-declare -r ELAB_VERSION='0.2.2'
+declare -r ELAB_VERSION='0.3.0'
 
 # display ascii logo
 function ascii()
@@ -458,11 +458,23 @@ if [ $EUID != 0 ]; then
     exit 1
 fi
 
-# check arguments
+# only one argument allowed
 if [ $# != 1 ]; then
     help
     exit 1
 fi
+
+# deal with --help and --version
+case "$1" in
+    -h|--help)
+    help
+    exit 0
+    ;;
+    -v|--version)
+    version
+    exit 0
+    ;;
+esac
 
 # available commands
 declare -A commands
