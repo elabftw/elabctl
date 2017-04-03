@@ -440,6 +440,11 @@ function update()
     restart
 }
 
+function upgrade()
+{
+    update
+}
+
 function usage()
 {
     help
@@ -480,7 +485,7 @@ esac
 
 # available commands
 declare -A commands
-for valid in backup help install logs php-logs self-update start status stop restart uninstall update usage version
+for valid in backup help install logs php-logs self-update start status stop restart uninstall update upgrade usage version
 do
     commands[$valid]=1
 done
