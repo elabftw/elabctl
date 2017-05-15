@@ -236,7 +236,7 @@ function install()
     This script will automatically install eLabFTW in a Docker container." 0 0
 
     # get info for letsencrypt and nginx
-    dialog --backtitle "$backtitle" --title "$title" --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached using a domain name. In this case a proper SSL certificate will be requested from Let's Encrypt.\n\nAnswer no if you can only reach this server using an IP address. In this case a self-signed certificate will be used." 0 0
+    dialog --backtitle "$backtitle" --title "$title" --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached from outside using a domain name. In this case a proper SSL certificate will be requested from Let's Encrypt.\n\nAnswer no if you can only reach this server using an IP address or if the domain name is internal to your organization. In this case a self-signed certificate will be used." 0 0
     if [ $? -eq 0 ]
     then
         set -e
