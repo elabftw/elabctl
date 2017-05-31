@@ -81,16 +81,6 @@ function getDeps()
         install-pkg wget
     fi
 
-    if ! hash dig 2>/dev/null; then
-        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
-            echo "Installing prerequisite package: dnsutils. Please wait…"
-            install-pkg dnsutils
-        else
-            echo "Installing prerequisite package: bind-utils. Please wait…"
-            install-pkg bind-utils
-        fi
-    fi
-
     if ! hash git 2>/dev/null; then
         echo "Installing prerequisite package: git. Please wait…"
         install-pkg git
@@ -247,26 +237,9 @@ It is sent to Let's Encrypt only.\n
 Enter your email address:\n" 0 0 --output-fd 1)
             # no domain name
             else
-                # try to get IP address
-                dialog --backtitle "$backtitle" --title "$title" --msgbox "\nI will now try to guess your IP address. Press OK to start." 0 0
-                servername=$(dig +short myip.opendns.com @resolver1.opendns.com)
-                # dns requests might be blocked
-                if [ $? != 0 ]; then
-                    # let's try to get the local IP with ip
-                    if hash ip 2>/dev/null; then
-                        servername=$(ip -4 addr | grep 'state UP' -A2| grep inet| awk '{print $2}' | cut -f1 -d'/'|head -n1)
-                    else
-                        # ask for ip if all else fails
-                        servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nCould not determine your IP address automatically. Please enter your IP address below:" 0 0 --output-fd 1)
-                    fi
-                fi
-                # check with user IP is good
-                dialog --backtitle "$backtitle" --title "$title" --yesno "\nThe detected IP address is: $ip\nLooks good to you?" 0 0
-                if [ $? != 0 ]; then
-                    servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter your IP address below:" 0 0 --output-fd 1)
-                fi
+                # ask for ip
+                servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter your IP address below:" 0 0 --output-fd 1)
             fi
-
 
         # behind firewall; ask directly the user
         else
