@@ -15,7 +15,7 @@ declare -r LOG_FILE='/var/log/elabftw.log'
 ###############################################################
 
 declare -r MAN_FILE='/usr/share/man/man1/elabctl.1.gz'
-declare -r ELAB_VERSION='0.3.0'
+declare -r ELAB_VERSION='0.4.0'
 
 # display ascii logo
 function ascii()
