@@ -211,44 +211,73 @@ function install()
     rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
     pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
 
-    set +e
-    ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
-    # dns requests might be blocked
-    if [ $? != 0 ]; then
-        # let's try to get the local IP with ip
-        if hash ip 2>/dev/null; then
-            ip=$(ip -4 addr | grep 'state UP' -A2| grep inet| awk '{print $2}' | cut -f1 -d'/'|head -n1)
-        else
-            ip="localhost"
-        fi
-    fi
-    set -e
-
     hasdomain='n'
-    domain=$ip
     title="Install eLabFTW"
     backtitle="eLabFTW installation"
 
+    # because answering No to dialog equals exit != 0
     set +e
 
     # welcome screen
     dialog --backtitle "$backtitle" --title "$title" --msgbox "\nWelcome to the install of eLabFTW :)\n
     This script will automatically install eLabFTW in a Docker container." 0 0
 
-    # get info for letsencrypt and nginx
-    dialog --backtitle "$backtitle" --title "$title" --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached from outside using a domain name. In this case a proper SSL certificate will be requested from Let's Encrypt.\n\nAnswer no if you can only reach this server using an IP address or if the domain name is internal to your organization. In this case a self-signed certificate will be used." 0 0
-    if [ $? -eq 0 ]
-    then
-        set -e
-        hasdomain='y'
-        domain=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nCool, we will use Let's Encrypt :)\n
-    What is the domain name of this server?\n
-    Example : elabftw.ktu.edu\n
-    Enter your domain name:\n" 0 0 --output-fd 1)
-        email=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nLast question, what is your email?\n
-    It is sent to Let's Encrypt only.\n
-    Enter your email address:\n" 0 0 --output-fd 1)
+    # start asking questions
+    ########################
+
+    # server or local?
+    dialog --backtitle "$backtitle" --title "$title" --yes-label "Server" --no-label "My computer" --yesno "\nAre you installing it on a Server or a personal computer?" 0 0
+    if [ $? -eq 0 ]; then
+        # server
+        dialog --backtitle "$backtitle" --title "$title" --yes-label "Has a public IP/domain name" --no-label "Is behind a firewall" --yesno "\nCan this server be reached from internet or is it behind a firewall?" 0 0
+        if [ $? -eq 0 ]; then
+            # public ip
+
+            # ask for domain name
+            dialog --backtitle "$backtitle" --title "$title" --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached from outside using a domain name. In this case a proper SSL certificate will be requested from Let's Encrypt.\n\nAnswer no if you can only reach this server using an IP address or if the domain name is internal. In this case a self-signed certificate will be used." 0 0
+            # domain name
+            if [ $? -eq 0 ]; then
+            hasdomain='y'
+            servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nCool, we will use Let's Encrypt :)\n
+What is the domain name of this server?\n
+Example : elabftw.ktu.edu\n
+Enter your domain name:\n" 0 0 --output-fd 1)
+            email=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nLast question, what is your email?\n
+It is sent to Let's Encrypt only.\n
+Enter your email address:\n" 0 0 --output-fd 1)
+            # no domain name
+            else
+                # try to get IP address
+                dialog --backtitle "$backtitle" --title "$title" --msgbox "\nI will now try to guess your IP address. Press OK to start." 0 0
+                servername=$(dig +short myip.opendns.com @resolver1.opendns.com)
+                # dns requests might be blocked
+                if [ $? != 0 ]; then
+                    # let's try to get the local IP with ip
+                    if hash ip 2>/dev/null; then
+                        servername=$(ip -4 addr | grep 'state UP' -A2| grep inet| awk '{print $2}' | cut -f1 -d'/'|head -n1)
+                    else
+                        # ask for ip if all else fails
+                        servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nCould not determine your IP address automatically. Please enter your IP address below:" 0 0 --output-fd 1)
+                    fi
+                fi
+                # check with user IP is good
+                dialog --backtitle "$backtitle" --title "$title" --yesno "\nThe detected IP address is: $ip\nLooks good to you?" 0 0
+                if [ $? != 0 ]; then
+                    servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter your IP address below:" 0 0 --output-fd 1)
+                fi
+            fi
+
+
+        # behind firewall; ask directly the user
+        else
+            servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter the local IP address below:" 0 0 --output-fd 1)
+        fi
+
+    else
+        # computer
+        servername="localhost"
     fi
+
 
     set -e
 
@@ -283,7 +312,7 @@ function install()
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Adjusting configuration" 20 80
     secret_key=$(curl --silent https://demo.elabftw.net/install/generateSecretKey.php)
     sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" $CONF_FILE
-    sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$domain/" $CONF_FILE
+    sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$servername/" $CONF_FILE
 
     # enable letsencrypt
     if [ $hasdomain == 'y' ]
@@ -306,13 +335,13 @@ function install()
         echo 65 | dialog --backtitle "$backtitle" --title "$title" --gauge "Allowing traffic on port 443" 20 80
         ufw allow 443/tcp || true
         echo 70 | dialog --backtitle "$backtitle" --title "$title" --gauge "Getting the SSL certificate" 20 80
-        cd ${DATA_DIR}/letsencrypt && ./letsencrypt-auto certonly --standalone --email "$email" --agree-tos -d "$domain"
+        cd ${DATA_DIR}/letsencrypt && ./letsencrypt-auto certonly --standalone --email "$email" --agree-tos -d "$servername"
     fi
 
     dialog --colors --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
     \Z1====>\Zn Start the containers with: \Zb\Z4elabctl start\Zn\n\n
     It will take a minute or two to run at first.\n\n
-    \Z1====>\Zn Go to https://$domain once started!\n\n
+    \Z1====>\Zn Go to https://$servername once started!\n\n
     In the mean time, check out what to do after an install:\n
     \Z1====>\Zn https://elabftw.readthedocs.io/en/latest/postinstall.html\n\n
     The log file of the install is here: $LOG_FILE\n
