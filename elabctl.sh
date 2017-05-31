@@ -390,7 +390,7 @@ function uninstall()
         rmbackup='n'
     fi
 
-    dialog --backtitle "$backtitle" --title "$title" --pause "\nRemoving everything in 10 seconds. Stop now you fool!\n" 20 40 10
+    dialog --backtitle "$backtitle" --title "$title" --ok-label "Skip timer" --cancel-label "Cancel uninstall" --pause "\nRemoving everything in 10 seconds. Stop now you fool!\n" 20 40 10
     if [ $? != 0 ]; then
         exit 1
     fi
