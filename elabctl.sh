@@ -185,8 +185,21 @@ function init()
 # install pip and docker-compose, get elabftw.yml and configure it with sed
 function install()
 {
+    # init vars
+    # mysql passwords
+    declare rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
+    declare pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
+
+    # if you don't want any dialog
+    declare unattended=${ELAB_UNATTENDED:-0}
+    declare servername=${ELAB_SERVERNAME:-localhost}
+    declare hasdomain=${ELAB_HASDOMAIN:-0}
+    declare email=${ELAB_EMAIL:-elabtest@yopmail.com}
+
+    # create the data dir
     mkdir -p $DATA_DIR
 
+    # do nothing if there are files in there
     if [ "$(ls -A $DATA_DIR)" ]; then
         echo "It looks like eLabFTW is already installed. Delete the ${DATA_DIR} folder to reinstall."
         exit 1
@@ -197,58 +210,56 @@ function install()
 
     init
 
-    # mysql passwords
-    rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
-    pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
-
-    hasdomain='n'
     title="Install eLabFTW"
     backtitle="eLabFTW installation"
 
-    # because answering No to dialog equals exit != 0
-    set +e
+    if [ $unattended -eq 0 ]; then
+        # because answering No to dialog equals exit != 0
+        set +e
 
-    # welcome screen
-    dialog --backtitle "$backtitle" --title "$title" --msgbox "\nWelcome to the install of eLabFTW :)\n
-    This script will automatically install eLabFTW in a Docker container." 0 0
+        # welcome screen
+        dialog --backtitle "$backtitle" --title "$title" --msgbox "\nWelcome to the install of eLabFTW :)\n
+        This script will automatically install eLabFTW in a Docker container." 0 0
 
-    # start asking questions
-    ########################
+        # start asking questions
+        ########################
 
-    # server or local?
-    dialog --backtitle "$backtitle" --title "$title" --yes-label "Server" --no-label "My computer" --yesno "\nAre you installing it on a Server or a personal computer?" 0 0
-    if [ $? -eq 0 ]; then
-        # server
-        dialog --backtitle "$backtitle" --title "$title" --yes-label "Has a public IP/domain name" --no-label "Is behind a firewall" --yesno "\nCan this server be reached from internet or is it behind a firewall?" 0 0
+        # server or local?
+        dialog --backtitle "$backtitle" --title "$title" --yes-label "Server" --no-label "My computer" --yesno "\nAre you installing it on a Server or a personal computer?" 0 0
         if [ $? -eq 0 ]; then
-            # public ip
-
-            # ask for domain name
-            dialog --backtitle "$backtitle" --title "$title" --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached from outside using a domain name. In this case a proper SSL certificate will be requested from Let's Encrypt.\n\nAnswer no if you can only reach this server using an IP address or if the domain name is internal. In this case a self-signed certificate will be used." 0 0
-            # domain name
+            # server
+            dialog --backtitle "$backtitle" --title "$title" --yes-label "Has a public IP/domain name" --no-label "Is behind a firewall" --yesno "\nCan this server be reached from internet or is it behind a firewall?" 0 0
             if [ $? -eq 0 ]; then
-            hasdomain='y'
-            servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nCool, we will use Let's Encrypt :)\n
-What is the domain name of this server?\n
-Example : elabftw.ktu.edu\n
-Enter your domain name:\n" 0 0 --output-fd 1)
-            email=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nLast question, what is your email?\n
-It is sent to Let's Encrypt only.\n
-Enter your email address:\n" 0 0 --output-fd 1)
-            # no domain name
+                # public ip
+
+                # ask for domain name
+                dialog --backtitle "$backtitle" --title "$title" --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached from outside using a domain name. In this case a proper SSL certificate will be requested from Let's Encrypt.\n\nAnswer no if you can only reach this server using an IP address or if the domain name is internal. In this case a self-signed certificate will be used." 0 0
+                # domain name
+                if [ $? -eq 0 ]; then
+                hasdomain=1
+                servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nCool, we will use Let's Encrypt :)\n
+    What is the domain name of this server?\n
+    Example : elabftw.ktu.edu\n
+    Enter your domain name:\n" 0 0 --output-fd 1)
+                email=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nLast question, what is your email?\n
+    It is sent to Let's Encrypt only.\n
+    Enter your email address:\n" 0 0 --output-fd 1)
+                # no domain name
+                else
+                    # ask for ip
+                    servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter your IP address below:" 0 0 --output-fd 1)
+                fi
+
+            # behind firewall; ask directly the user
             else
-                # ask for ip
-                servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter your IP address below:" 0 0 --output-fd 1)
+                servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter the local IP address below:" 0 0 --output-fd 1)
             fi
 
-        # behind firewall; ask directly the user
         else
-            servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter the local IP address below:" 0 0 --output-fd 1)
+            # computer
+            servername="localhost"
         fi
 
-    else
-        # computer
-        servername="localhost"
     fi
 
 
@@ -288,7 +299,7 @@ Enter your email address:\n" 0 0 --output-fd 1)
     sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$servername/" $CONF_FILE
 
     # enable letsencrypt
-    if [ $hasdomain == 'y' ]
+    if [ $hasdomain -eq 1 ]
     then
         sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" $CONF_FILE
         sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" $CONF_FILE
@@ -301,27 +312,30 @@ Enter your email address:\n" 0 0 --output-fd 1)
 
     sleep 1
 
-    if  [ $hasdomain == 'y' ]
+    if  [ $hasdomain -eq 1 ]
     then
         echo 60 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing letsencrypt in ${DATA_DIR}/letsencrypt" 20 80
         git clone --depth 1 --branch master https://github.com/letsencrypt/letsencrypt ${DATA_DIR}/letsencrypt >> $LOG_FILE 2>&1
         echo 65 | dialog --backtitle "$backtitle" --title "$title" --gauge "Allowing traffic on port 443" 20 80
         ufw allow 443/tcp || true
         echo 70 | dialog --backtitle "$backtitle" --title "$title" --gauge "Getting the SSL certificate" 20 80
-        cd ${DATA_DIR}/letsencrypt && ./letsencrypt-auto certonly --standalone --email "$email" --agree-tos -d "$servername"
+        cd ${DATA_DIR}/letsencrypt && ./letsencrypt-auto certonly --standalone --email "$email" --agree-tos --non-interactive -d "$servername"
     fi
 
-    dialog --colors --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
-    \Z1====>\Zn Start the containers with: \Zb\Z4elabctl start\Zn\n\n
-    It will take a minute or two to run at first.\n\n
-    \Z1====>\Zn Go to https://$servername once started!\n\n
-    In the mean time, check out what to do after an install:\n
-    \Z1====>\Zn https://elabftw.readthedocs.io/en/latest/postinstall.html\n\n
-    The log file of the install is here: $LOG_FILE\n
-    The configuration file for docker-compose is here: $CONF_FILE\n
-    Your data folder is: ${DATA_DIR}. It contains the MySQL database and uploaded files.\n
-    You can use 'docker logs -f elabftw' to follow the starting up of the container.\n
-    See 'man elabctl' to backup or update." 20 80
+    # final screen
+    if [ $unattended -eq 0 ]; then
+        dialog --colors --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
+        \Z1====>\Zn Start the containers with: \Zb\Z4elabctl start\Zn\n\n
+        It will take a minute or two to run at first.\n\n
+        \Z1====>\Zn Go to https://$servername once started!\n\n
+        In the mean time, check out what to do after an install:\n
+        \Z1====>\Zn https://elabftw.readthedocs.io/en/latest/postinstall.html\n\n
+        The log file of the install is here: $LOG_FILE\n
+        The configuration file for docker-compose is here: $CONF_FILE\n
+        Your data folder is: ${DATA_DIR}. It contains the MySQL database and uploaded files.\n
+        You can use 'docker logs -f elabftw' to follow the starting up of the container.\n
+        See 'man elabctl' to backup or update." 20 80
+    fi
 }
 
 function install-pkg()
