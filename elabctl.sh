@@ -4,18 +4,24 @@
 ###############################################################
 # CONFIGURATION
 # where do you want your backups to end up?
-declare -r BACKUP_DIR='/var/backups/elabftw'
+declare BACKUP_DIR='/var/backups/elabftw'
 # where do we store the config file?
-declare -r CONF_FILE='/etc/elabftw.yml'
+declare CONF_FILE='/etc/elabftw.yml'
 # where do we store the MySQL database and the uploaded files?
-declare -r DATA_DIR='/var/elabftw'
+declare DATA_DIR='/var/elabftw'
 # where do we store the logs?
-declare -r LOG_FILE='/var/log/elabftw.log'
+declare LOG_FILE='/var/log/elabftw.log'
 # END CONFIGURATION
 ###############################################################
 
 declare -r MAN_FILE='/usr/share/man/man1/elabctl.1.gz'
 declare -r ELAB_VERSION='0.4.0'
+declare -r USER_CONF_FILE='/etc/elabctl.conf'
+
+# Now we load the configuration file for custom directories set by user
+if [ -f ${USER_CONF_FILE} ]; then
+    source ${USER_CONF_FILE}
+fi
 
 # display ascii logo
 function ascii()
@@ -57,6 +63,14 @@ function backup()
     zip -rq "$zipfile" $CONF_FILE
 
     echo "Done. Copy ${BACKUP_DIR} over to another computer."
+}
+
+function getUserconf()
+{
+    # do not overwrite a custom conf file
+    if [ ! -f $USER_CONF_FILE ]; then
+        wget -qO- https://github.com/elabftw/elabctl/raw/master/elabctl.conf > $USER_CONF_FILE
+    fi
 }
 
 function getDeps()
@@ -178,8 +192,14 @@ function init()
 {
     ascii
     getDistrib
+    echo "after distrib"
     getDeps
+    echo "after deps"
     getMan
+    echo "after man"
+
+    getUserconf
+    echo "after userconf"
 }
 
 # install pip and docker-compose, get elabftw.yml and configure it with sed
@@ -196,23 +216,13 @@ function install()
     declare hasdomain=${ELAB_HASDOMAIN:-0}
     declare email=${ELAB_EMAIL:-elabtest@yopmail.com}
 
-    # create the data dir
-    mkdir -p $DATA_DIR
-
-    # do nothing if there are files in there
-    if [ "$(ls -A $DATA_DIR)" ]; then
-        echo "It looks like eLabFTW is already installed. Delete the ${DATA_DIR} folder to reinstall."
-        exit 1
-    fi
-
     # exit on error
     set -e
-
-    init
 
     title="Install eLabFTW"
     backtitle="eLabFTW installation"
 
+    # show welcome screen and ask if defaults are fine
     if [ $unattended -eq 0 ]; then
         # because answering No to dialog equals exit != 0
         set +e
@@ -221,6 +231,37 @@ function install()
         dialog --backtitle "$backtitle" --title "$title" --msgbox "\nWelcome to the install of eLabFTW :)\n
         This script will automatically install eLabFTW in a Docker container." 0 0
 
+        dialog --backtitle "$backtitle" --title "$title" --yes-label "Looks good to me" --no-label "Download example conf and quit" --yesno "\nHere is what will happen:\n
+        The main configuration file will be created at: ${CONF_FILE}\n
+        The configuration file for elabctl will be created at: ${USER_CONF_FILE}\n
+        A directory holding elabftw data (mysql + uploaded files) will be created at: ${DATA_DIR}\n
+        A log file of the installation process will be created at: ${LOG_FILE}\n
+        A man page will be added to your system\n
+        The backups will be created at: ${BACKUP_DIR}\n\n
+        If you wish to change the defaults paths, quit now and edit the file ${USER_CONF_FILE}" 0 0
+        if [ $? -eq 1 ]; then
+            echo "Downloading an example configuration file to ${USER_CONF_FILE}"
+            getUserconf
+            echo "Done. You can now edit this file and restart the installation afterwards."
+            exit 0
+        fi
+    fi
+
+    # create the data dir
+    mkdir -p $DATA_DIR
+
+    # do nothing if there are files in there
+    if [ "$(ls -A $DATA_DIR)" ]; then
+        echo "It looks like eLabFTW is already installed. Delete the ${DATA_DIR} folder to reinstall."
+    ###############    exit 1
+    fi
+
+
+    # get what we need
+    init
+
+    if [ $unattended -eq 0 ]; then
+        set +e
         # start asking questions
         ########################
 
@@ -260,6 +301,8 @@ function install()
             servername="localhost"
         fi
 
+    else
+        init
     fi
 
 
