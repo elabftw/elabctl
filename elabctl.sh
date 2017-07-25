@@ -327,6 +327,7 @@ function install()
     secret_key=$(curl --silent https://demo.elabftw.net/install/generateSecretKey.php)
     sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" $CONF_FILE
     sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$servername/" $CONF_FILE
+    sed -i -e "s:/var/elabftw:${DATA_DIR}:" $CONF_FILE
 
     # enable letsencrypt
     if [ $hasdomain -eq 1 ]
