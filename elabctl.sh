@@ -188,15 +188,6 @@ function help()
     See 'man elabctl' for more informations."
 }
 
-function init()
-{
-    ascii
-    getDistrib
-    getDeps
-    getMan
-    getUserconf
-}
-
 # install pip and docker-compose, get elabftw.yml and configure it with sed
 function install()
 {
@@ -216,6 +207,10 @@ function install()
 
     title="Install eLabFTW"
     backtitle="eLabFTW installation"
+
+    ascii
+    getDistrib
+    getDeps
 
     # show welcome screen and ask if defaults are fine
     if [ $unattended -eq 0 ]; then
@@ -251,9 +246,8 @@ function install()
         exit 1
     fi
 
-
-    # get what we need
-    init
+    getMan
+    getUserconf
 
     if [ $unattended -eq 0 ]; then
         set +e
@@ -296,8 +290,6 @@ function install()
             servername="localhost"
         fi
 
-    else
-        init
     fi
 
 
