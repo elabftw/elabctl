@@ -192,14 +192,9 @@ function init()
 {
     ascii
     getDistrib
-    echo "after distrib"
     getDeps
-    echo "after deps"
     getMan
-    echo "after man"
-
     getUserconf
-    echo "after userconf"
 }
 
 # install pip and docker-compose, get elabftw.yml and configure it with sed
@@ -253,7 +248,7 @@ function install()
     # do nothing if there are files in there
     if [ "$(ls -A $DATA_DIR)" ]; then
         echo "It looks like eLabFTW is already installed. Delete the ${DATA_DIR} folder to reinstall."
-    ###############    exit 1
+        exit 1
     fi
 
 
