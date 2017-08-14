@@ -40,6 +40,8 @@ function ascii()
 # create a mysqldump and a zip archive of the uploaded files
 function backup()
 {
+    echo "Using backup directory "$BACKUP_DIR""
+
     if ! ls -A "${BACKUP_DIR}" > /dev/null 2>&1; then
         mkdir -p "${BACKUP_DIR}"
     fi
@@ -401,6 +403,7 @@ function self-update()
 
 function start()
 {
+    echo "Using configuration file "$CONF_FILE""
     docker-compose -f "$CONF_FILE" up -d
 }
 
@@ -411,6 +414,7 @@ function status()
 
 function stop()
 {
+    echo "Using configuration file "$CONF_FILE""
     docker-compose -f "$CONF_FILE" down
 }
 
@@ -483,6 +487,7 @@ function uninstall()
 
 function update()
 {
+    echo "Using configuration file "$CONF_FILE""
     docker-compose -f "$CONF_FILE" pull
     restart
 }
