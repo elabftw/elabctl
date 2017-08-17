@@ -410,7 +410,6 @@ function self-update()
 
 function start()
 {
-    echo "Using configuration file "$CONF_FILE""
     docker-compose -f "$CONF_FILE" up -d
 }
 
@@ -421,7 +420,6 @@ function status()
 
 function stop()
 {
-    echo "Using configuration file "$CONF_FILE""
     docker-compose -f "$CONF_FILE" down
 }
 
@@ -494,7 +492,6 @@ function uninstall()
 
 function update()
 {
-    echo "Using configuration file "$CONF_FILE""
     docker-compose -f "$CONF_FILE" pull
     restart
 }
@@ -511,7 +508,7 @@ function usage()
 
 function version()
 {
-    echo "elabctl © 2017 Nicolas CARPi"
+    echo "elabctl © 2017 Nicolas CARPi - https://www.elabftw.net"
     echo "Version: $ELABCTL_VERSION"
 }
 
@@ -552,6 +549,9 @@ done
 if [[ ${commands[$1]} ]]; then
     # exit if variable isn't set
     set -u
+    version
+    echo "Using configuration file: "$CONF_FILE""
+    echo ""
     $1
 else
     help
