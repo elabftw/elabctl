@@ -354,9 +354,13 @@ function install()
     sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$servername/" $CONF_FILE
     sed -i -e "s:/var/elabftw:${DATA_DIR}:" $CONF_FILE
 
+    # disable https
+    if [ $usehttps = 0 ]; then
+        sed -i -e "s/DISABLE_HTTPS=false/DISABLE_HTTPS=true/" $CONF_FILE
+    fi
+
     # enable letsencrypt
-    if [ $hasdomain -eq 1 ]
-    then
+    if [ $hasdomain -eq 1 ]; then
         # even if we don't use Let's Encrypt, for using TLS certs we need this to be true, and volume mounted
         sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" $CONF_FILE
         sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" $CONF_FILE
