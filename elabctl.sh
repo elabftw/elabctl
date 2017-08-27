@@ -204,6 +204,9 @@ function install()
     declare servername=${ELAB_SERVERNAME:-localhost}
     declare hasdomain=${ELAB_HASDOMAIN:-0}
     declare email=${ELAB_EMAIL:-elabtest@yopmail.com}
+    declare usele=${ELAB_USELE:-0}
+    declare usehttps=${ELAB_USEHTTPS:-1}
+    declare useselfsigned=${ELAB_USESELFSIGNED:-0}
 
     # exit on error
     set -e
@@ -254,46 +257,65 @@ function install()
 
     if [ $unattended -eq 0 ]; then
         set +e
-        # start asking questions
-        ########################
+        ########################################################################
+        # start asking questions                                               #
+        # what we want here is the domain name of the server or its IP address #
+        # and also if we want to use Let's Encrypt or not
+        ########################################################################
 
-        # server or local?
+        # ASK SERVER OR LOCAL?
         dialog --backtitle "$backtitle" --title "$title" --yes-label "Server" --no-label "My computer" --yesno "\nAre you installing it on a Server or a personal computer?" 0 0
-        if [ $? -eq 0 ]; then
-            # server
-            dialog --backtitle "$backtitle" --title "$title" --yes-label "Has a public IP/domain name" --no-label "Is behind a firewall" --yesno "\nCan this server be reached from internet or is it behind a firewall?" 0 0
-            if [ $? -eq 0 ]; then
-                # public ip
-
-                # ask for domain name
-                dialog --backtitle "$backtitle" --title "$title" --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached from outside using a domain name. In this case a proper SSL certificate will be requested from Let's Encrypt.\n\nAnswer no if you can only reach this server using an IP address or if the domain name is internal. In this case a self-signed certificate will be used." 0 0
-                # domain name
-                if [ $? -eq 0 ]; then
-                hasdomain=1
-                servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nCool, we will use Let's Encrypt :)\n
-    What is the domain name of this server?\n
-    Example : elabftw.ktu.edu\n
-    Enter your domain name:\n" 0 0 --output-fd 1)
-                email=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nLast question, what is your email?\n
-    It is sent to Let's Encrypt only.\n
-    Enter your email address:\n" 0 0 --output-fd 1)
-                # no domain name
-                else
-                    # ask for ip
-                    servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter your IP address below:" 0 0 --output-fd 1)
-                fi
-
-            # behind firewall; ask directly the user
-            else
-                servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter the local IP address below:" 0 0 --output-fd 1)
-            fi
-
-        else
-            # computer
+        if [ $? -eq 1 ]; then
+            # local computer
             servername="localhost"
-        fi
+            usehttps=0
+        else
+            # server
 
+            ## DOMAIN NAME OR IP BLOCK
+            dialog --backtitle "$backtitle" --title "$title" --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached using a domain name. Answer no if you can only reach it with an IP address." 0 0
+            if [ $? -eq 0 ]; then
+                hasdomain=1
+                # ask for domain name
+                servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter your domain name below:\nExample: elabftw.example.org\n" 0 0 --output-fd 1)
+            else
+                # ask for ip
+                servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter your IP address below:\nExample: 88.120.132.154" 0 0 --output-fd 1)
+            fi
+            ## END DOMAIN NAME OR IP BLOCK
+
+            # ASK IF WE WANT HTTPS AT ALL FIRST
+            dialog --backtitle "$backtitle" --title "$title" --yes-label "Use HTTPS" --no-label "Disable HTTPS" --yesno "\nDo you want to run the HTTPS enabled container or a normal HTTP server? Note: disabling HTTPS means you will use another webserver as a proxy for TLS connections. Choose 'Use HTTPS' if unsure." 0 0
+            if [ $? -eq 1 ]; then
+                # use HTTP
+                usehttps=0
+            else
+                # use HTTPS
+                # https + no domain = self signed
+                if [ $hasdomain -eq 0 ]; then
+                    useselfsigned=1
+                else
+                    # ASK IF SELF-SIGNED OR PROPER CERT
+                    dialog --backtitle "$backtitle" --title "$title" --yes-label "Use correct certificate" --no-label "Use self-signed" --yesno "\nDo you want to use a proper TLS certificate (coming from Let's Encrypt or provided by you) or use a self-signed certificate? The self-signed certificate will be automatically generated for you, but browsers will display a warning when connecting." 0 0
+                    if [ $? -eq 1 ]; then
+                        useselfsigned=1
+                    else
+                        # want correct cert
+                        # ASK FOR LETSENCRYPT
+                        dialog --colors --backtitle "$backtitle" --title "$title" --yes-label "Use Let's Encrypt" --no-label "Use my own certificate" --yesno "\nDo you want to request a free certificate from Let's Encrypt or use one you already have?\n\n\ZbIMPORTANT:\Zn you can only use Let's Encrypt if you have a domain name pointing to this server and it is accessible from internet (not behind a corporate network)." 0 0
+                        if [ $? -eq 0 ]; then
+                            usele=1
+                            hasdomain=1
+                            email=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nWhat is your email?\n
+        It is sent to Let's Encrypt only so they can remind you about certificate expiration.\n
+        Enter your email address:\n" 0 0 --output-fd 1)
+                        fi
+                    fi
+                fi
+            fi
+        fi
     fi
+
 
 
     set -e
@@ -335,6 +357,7 @@ function install()
     # enable letsencrypt
     if [ $hasdomain -eq 1 ]
     then
+        # even if we don't use Let's Encrypt, for using TLS certs we need this to be true, and volume mounted
         sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" $CONF_FILE
         sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" $CONF_FILE
     fi
@@ -346,8 +369,8 @@ function install()
 
     sleep 1
 
-    if  [ $hasdomain -eq 1 ]
-    then
+    # install letsencrypt and request a certificate
+    if  [ $hasdomain -eq 1 ] && [ $usele -eq 1 ]; then
         echo 60 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing letsencrypt in ${DATA_DIR}/letsencrypt" 20 80
         git clone --depth 1 --branch master https://github.com/letsencrypt/letsencrypt ${DATA_DIR}/letsencrypt >> $LOG_FILE 2>&1
         echo 65 | dialog --backtitle "$backtitle" --title "$title" --gauge "Allowing traffic on port 443" 20 80
