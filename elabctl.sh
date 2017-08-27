@@ -309,6 +309,9 @@ function install()
                             email=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nWhat is your email?\n
         It is sent to Let's Encrypt only so they can remind you about certificate expiration.\n
         Enter your email address:\n" 0 0 --output-fd 1)
+                        else
+                            # show warning about need of edit config file for own certs
+                            dialog --colors --backtitle "$backtitle" --title "$title" --msgbox "\nMake sure to \Zb\Z4edit the configuration file ${CONF_FILE}\Zn to point to your certificates before starting the containers!\n" 0 0
                         fi
                     fi
                 fi
