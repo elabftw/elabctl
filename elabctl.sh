@@ -227,16 +227,16 @@ function install()
         dialog --backtitle "$backtitle" --title "$title" --msgbox "\nWelcome to the install of eLabFTW :)\n
         This script will automatically install eLabFTW in a Docker container." 0 0
 
-        dialog --backtitle "$backtitle" --title "$title" --yes-label "Looks good to me" --no-label "Download example conf and quit" --yesno "\nHere is what will happen:\n
-        The main configuration file will be created at: ${CONF_FILE}\n
-        The configuration file for elabctl will be created at: ${USER_CONF_FILE}\n
-        A directory holding elabftw data (mysql + uploaded files) will be created at: ${DATA_DIR}\n
-        A log file of the installation process will be created at: ${LOG_FILE}\n
-        A man page will be added to your system\n
-        The backups will be created at: ${BACKUP_DIR}\n\n
-        If you wish to change the defaults paths, quit now and edit the file ${USER_CONF_FILE}" 0 0
+        dialog --colors --backtitle "$backtitle" --title "$title" --yes-label "Looks good to me" --no-label "Download example conf and quit" --yesno "\nHere is what will happen:\n
+        The main configuration file will be created at: \Z4${CONF_FILE}\Zn\n
+        The configuration file for elabctl will be created at: \Z4${USER_CONF_FILE}\Zn\n
+        A directory holding elabftw data (mysql + uploaded files) will be created at: \Z4${DATA_DIR}\Zn\n
+        A log file of the installation process will be created at: \Z4${LOG_FILE}\Zn\n
+        A man page for elabctl will be added to your system\n
+        The backups will be created at: \Z4${BACKUP_DIR}\Zn\n\n
+        If you wish to change the defaults paths, quit now and edit the file \Z4${USER_CONF_FILE}\Zn" 0 0
         if [ $? -eq 1 ]; then
-            echo "Downloading an example configuration file to ${USER_CONF_FILE}"
+            echo "Downloading an example configuration file to \Z4${USER_CONF_FILE}\Zn"
             getUserconf
             echo "Done. You can now edit this file and restart the installation afterwards."
             exit 0
@@ -273,19 +273,19 @@ function install()
             # server
 
             ## DOMAIN NAME OR IP BLOCK
-            dialog --backtitle "$backtitle" --title "$title" --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached using a domain name. Answer no if you can only reach it with an IP address." 0 0
+            dialog --backtitle "$backtitle" --title "$title" --yesno "\nIs a domain name pointing to this server?\n\nAnswer yes if this server can be reached using a domain name. Answer no if you can only reach it with an IP address.\n" 0 0
             if [ $? -eq 0 ]; then
                 hasdomain=1
                 # ask for domain name
                 servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter your domain name below:\nExample: elabftw.example.org\n" 0 0 --output-fd 1)
             else
                 # ask for ip
-                servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter your IP address below:\nExample: 88.120.132.154" 0 0 --output-fd 1)
+                servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter your IP address below:\nExample: 88.120.132.154\n" 0 0 --output-fd 1)
             fi
             ## END DOMAIN NAME OR IP BLOCK
 
             # ASK IF WE WANT HTTPS AT ALL FIRST
-            dialog --backtitle "$backtitle" --title "$title" --yes-label "Use HTTPS" --no-label "Disable HTTPS" --yesno "\nDo you want to run the HTTPS enabled container or a normal HTTP server? Note: disabling HTTPS means you will use another webserver as a proxy for TLS connections. Choose 'Use HTTPS' if unsure." 0 0
+            dialog --backtitle "$backtitle" --title "$title" --yes-label "Use HTTPS" --no-label "Disable HTTPS" --yesno "\nDo you want to run the HTTPS enabled container or a normal HTTP server? Note: disabling HTTPS means you will use another webserver as a proxy for TLS connections.\n\nChoose 'Disable HTTPS' if you already have a webserver capable of terminating TLS requests running (Apache or nginx).\nChoose 'Use HTTPS' if unsure.\n" 0 0
             if [ $? -eq 1 ]; then
                 # use HTTP
                 usehttps=0
@@ -296,13 +296,13 @@ function install()
                     useselfsigned=1
                 else
                     # ASK IF SELF-SIGNED OR PROPER CERT
-                    dialog --backtitle "$backtitle" --title "$title" --yes-label "Use correct certificate" --no-label "Use self-signed" --yesno "\nDo you want to use a proper TLS certificate (coming from Let's Encrypt or provided by you) or use a self-signed certificate? The self-signed certificate will be automatically generated for you, but browsers will display a warning when connecting." 0 0
+                    dialog --backtitle "$backtitle" --title "$title" --yes-label "Use correct certificate" --no-label "Use self-signed" --yesno "\nDo you want to use a proper TLS certificate (coming from Let's Encrypt or provided by you) or use a self-signed certificate? The self-signed certificate will be automatically generated for you, but browsers will display a warning when connecting.\n\nChoose 'Use self-signed' if you do not have a domain name.\n" 0 0
                     if [ $? -eq 1 ]; then
                         useselfsigned=1
                     else
                         # want correct cert
                         # ASK FOR LETSENCRYPT
-                        dialog --colors --backtitle "$backtitle" --title "$title" --yes-label "Use Let's Encrypt" --no-label "Use my own certificate" --yesno "\nDo you want to request a free certificate from Let's Encrypt or use one you already have?\n\n\ZbIMPORTANT:\Zn you can only use Let's Encrypt if you have a domain name pointing to this server and it is accessible from internet (not behind a corporate network)." 0 0
+                        dialog --colors --backtitle "$backtitle" --title "$title" --yes-label "Use Let's Encrypt" --no-label "Use my own certificate" --yesno "\nDo you want to request a free certificate from Let's Encrypt or use one you already have?\n\n\ZbIMPORTANT:\Zn you can only use Let's Encrypt if you have a domain name pointing to this server and it is accessible from internet (not behind a corporate network).\n" 0 0
                         if [ $? -eq 0 ]; then
                             usele=1
                             hasdomain=1
@@ -320,10 +320,10 @@ function install()
 
     set -e
 
-    echo 10 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing python-pip" 20 80
+    echo 10 | dialog --backtitle "$backtitle" --title "Installing required packages" --gauge "Installing python-pip" 20 80
     install-pkg python-pip >> "$LOG_FILE" 2>&1
 
-    echo 30 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing docker-compose" 20 80
+    echo 30 | dialog --backtitle "$backtitle" --title "Installing required packages" --gauge "Installing docker-compose" 20 80
     # make sure we have the latest pip version
     pip install --upgrade pip >> "$LOG_FILE" 2>&1
     pip install --upgrade docker-compose >> "$LOG_FILE" 2>&1
@@ -386,13 +386,14 @@ function install()
         It will take a minute or two to run at first.\n\n
         \Z1====>\Zn Go to https://$servername once started!\n\n
         In the mean time, check out what to do after an install:\n
-        \Z1====>\Zn https://elabftw.readthedocs.io/en/latest/postinstall.html\n\n
+        \Z1====>\Zn https://doc.elabftw.net/postinstall.html\n\n
         The log file of the install is here: $LOG_FILE\n
-        The configuration file for docker-compose is here: $CONF_FILE\n
-        Your data folder is: ${DATA_DIR}. It contains the MySQL database and uploaded files.\n
+        The configuration file for docker-compose is here: \Z4$CONF_FILE\Zn\n
+        Your data folder is: \Z4${DATA_DIR}\Zn. It contains the MySQL database and uploaded files.\n
         You can use 'docker logs -f elabftw' to follow the starting up of the container.\n
         See 'man elabctl' to backup or update." 20 80
     fi
+
 }
 
 function install-pkg()
