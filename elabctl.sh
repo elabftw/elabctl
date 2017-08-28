@@ -302,7 +302,7 @@ function install()
                     else
                         # want correct cert
                         # ASK FOR LETSENCRYPT
-                        dialog --colors --backtitle "$backtitle" --title "$title" --yes-label "Use Let's Encrypt" --no-label "Use my own certificate" --yesno "\nDo you want to request a free certificate from Let's Encrypt or use one you already have?\n\n\ZbIMPORTANT:\Zn you can only use Let's Encrypt if you have a domain name pointing to this server and it is accessible from internet (not behind a corporate network).\n" 0 0
+                        dialog --colors --backtitle "$backtitle" --title "$title" --yes-label "Use Let's Encrypt" --no-label "Use my own certificate" --yesno "\nDo you want to request a free certificate from Let's Encrypt or use one you already have?\n\n\ZbIMPORTANT:\Zn you can only use Let's Encrypt if you have a domain name pointing to this server and it is accessible from internet (not behind a corporate network).\nChoose 'Use my own certificate' if you don't want elabctl to install the Let's Encrypt client to request a new certificate." 0 0
                         if [ $? -eq 0 ]; then
                             usele=1
                             hasdomain=1
