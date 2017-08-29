@@ -523,6 +523,9 @@ function uninstall()
 
 function update()
 {
+    echo "Before updating, a backup will be created."
+    backup
+    echo "Backup done, now updating."
     docker-compose -f "$CONF_FILE" pull
     restart
 }
