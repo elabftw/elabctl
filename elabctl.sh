@@ -268,7 +268,6 @@ function install()
         if [ $? -eq 1 ]; then
             # local computer
             servername="localhost"
-            usehttps=0
         else
             # server
 
