@@ -15,7 +15,7 @@ declare LOG_FILE='/var/log/elabftw.log'
 ###############################################################
 
 declare -r MAN_FILE='/usr/share/man/man1/elabctl.1.gz'
-declare -r ELABCTL_VERSION='0.6.1'
+declare -r ELABCTL_VERSION='0.6.2'
 declare -r USER_CONF_FILE='/etc/elabctl.conf'
 
 # Now we load the configuration file for custom directories set by user
@@ -77,7 +77,7 @@ function getUserconf()
 
 function getDeps()
 {
-    if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
+    if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ] || [ "$ID" == "linuxmint" ]; then
         echo "Synchronizing packages index. Please wait…"
         apt-get update >> $LOG_FILE 2>&1
     fi
@@ -115,8 +115,8 @@ function getDistrib()
 
         # pacman = package manager
 
-        # DEBIAN / UBUNTU
-        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
+        # DEBIAN / UBUNTU / MINT
+        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ] || [ "$ID" == "linuxmint" ]; then
             PACMAN="apt-get -y install"
 
         # FEDORA
