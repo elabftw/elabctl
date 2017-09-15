@@ -407,6 +407,16 @@ function install-pkg()
     $PACMAN "$1" >> $LOG_FILE 2>&1
 }
 
+function is-installed()
+{
+    if [ ! -f $CONF_FILE ]; then
+        echo "###### ERROR ##########################################################"
+        echo "Configuration file could not be found! Did you run the install command?"
+        echo "#######################################################################"
+        exit 1
+    fi
+}
+
 function logs()
 {
     docker logs mysql
@@ -440,6 +450,7 @@ function self-update()
 
 function start()
 {
+    is-installed
     docker-compose -f "$CONF_FILE" up -d
 }
 
