@@ -175,6 +175,7 @@ function help()
 
         backup          Backup your installation
         help            Show this text
+        info            Display the configuration variables and status
         install         Configure and install required components
         logs            Show logs of the containers
         php-logs        Show last 15 lines of nginx error log
@@ -189,6 +190,22 @@ function help()
         version         Display elabctl version
 
     See 'man elabctl' for more informations."
+}
+
+function info()
+{
+    echo "Backup directory: ${BACKUP_DIR}"
+    echo "Data directory: ${DATA_DIR}"
+    echo "Log file: ${LOG_FILE}"
+    echo "Man file: ${MAN_FILE}"
+    echo ""
+    echo "Status:"
+    status
+}
+
+function infos()
+{
+    info
 }
 
 # install pip and docker-compose, get elabftw.yml and configure it with sed
@@ -585,7 +602,7 @@ esac
 
 # available commands
 declare -A commands
-for valid in backup help install logs php-logs self-update start status stop refresh restart uninstall update upgrade usage version
+for valid in backup help info infos install logs php-logs self-update start status stop refresh restart uninstall update upgrade usage version
 do
     commands[$valid]=1
 done
