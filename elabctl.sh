@@ -40,7 +40,7 @@ function ascii()
 # create a mysqldump and a zip archive of the uploaded files
 function backup()
 {
-    echo "Using backup directory "$BACKUP_DIR""
+    echo "Using backup directory $BACKUP_DIR"
 
     if ! ls -A "${BACKUP_DIR}" > /dev/null 2>&1; then
         mkdir -p "${BACKUP_DIR}"
@@ -219,7 +219,7 @@ function install()
     getDeps
 
     # show welcome screen and ask if defaults are fine
-    if [ $unattended -eq 0 ]; then
+    if [ "$unattended" -eq 0 ]; then
         # because answering No to dialog equals exit != 0
         set +e
 
@@ -255,7 +255,7 @@ function install()
     getMan
     getUserconf
 
-    if [ $unattended -eq 0 ]; then
+    if [ "$unattended" -eq 0 ]; then
         set +e
         ########################################################################
         # start asking questions                                               #
