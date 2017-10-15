@@ -15,7 +15,7 @@ declare LOG_FILE='/var/log/elabftw.log'
 ###############################################################
 
 declare -r MAN_FILE='/usr/share/man/man1/elabctl.1.gz'
-declare -r ELABCTL_VERSION='0.6.2'
+declare -r ELABCTL_VERSION='0.6.3'
 declare -r USER_CONF_FILE='/etc/elabctl.conf'
 
 # Now we load the configuration file for custom directories set by user
@@ -473,7 +473,7 @@ function start()
 
 function status()
 {
-    docker ps
+    docker-compose -f "$CONF_FILE" ps
 }
 
 function stop()
