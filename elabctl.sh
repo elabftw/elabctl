@@ -342,6 +342,9 @@ function install()
     echo 10 | dialog --backtitle "$backtitle" --title "Installing required packages" --gauge "Installing python-pip" 20 80
     install-pkg python-pip >> "$LOG_FILE" 2>&1
 
+    echo 20 | dialog --backtitle "$backtitle" --title "Installing required packages" --gauge "Installing python-setuptools" 20 80
+    install-pkg python-setuptools >> "$LOG_FILE" 2>&1
+
     echo 30 | dialog --backtitle "$backtitle" --title "Installing required packages" --gauge "Installing docker-compose" 20 80
     # make sure we have the latest pip version
     pip install --upgrade pip >> "$LOG_FILE" 2>&1
