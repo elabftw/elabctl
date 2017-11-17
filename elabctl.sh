@@ -67,6 +67,20 @@ function backup()
     echo "Done. Copy ${BACKUP_DIR} over to another computer."
 }
 
+# generate info for reporting a bug
+function bugreport()
+{
+    echo "Collecting information for a bug report…"
+    echo -n "elabctl version: "
+    version
+    echo -n "elabftw version: "
+    docker exec -t elabftw git tag|tail -n 1
+    echo "operating system: "
+    cat /etc/os-release
+    uname -a
+    free -h
+}
+
 function getUserconf()
 {
     # do not overwrite a custom conf file
@@ -174,6 +188,7 @@ function help()
     Commands:
 
         backup          Backup your installation
+        bugreport       Gather information about the system for a bug report
         help            Show this text
         info            Display the configuration variables and status
         install         Configure and install required components
@@ -605,7 +620,7 @@ esac
 
 # available commands
 declare -A commands
-for valid in backup help info infos install logs php-logs self-update start status stop refresh restart uninstall update upgrade usage version
+for valid in backup bugreport help info infos install logs php-logs self-update start status stop refresh restart uninstall update upgrade usage version
 do
     commands[$valid]=1
 done
