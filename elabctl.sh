@@ -87,6 +87,9 @@ function detectOS()
         source /etc/os-release
         OS=$ID
 
+    elif [ `uname` == "Darwin" ]; then
+        OS='macos'
+
     # for CentOS 6.8, see #368
     elif grep -qi centos /etc/*-release; then
         echo "It looks like you are using CentOS 6.8 which is using a very old kernel not compatible/stable with Docker. It is not recommended to use eLabFTW in Docker with this setup. Please have a look at the installation instructions without Docker."
@@ -111,6 +114,10 @@ function getDeps()
     if [ "$OS" == "ubuntu" ] || [ "$OS" == "debian" ] || [ "$OS" == "linuxmint" ]; then
         echo "Synchronizing packages index. Please wait…"
         apt-get update >> $LOG_FILE 2>&1
+    elif [ "$OS" == "macos" ] && ! hash brew 2>/dev/null; then
+        echo "Installing prerequisite package: brew. Please wait…"
+        # See https://brew.sh/
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     fi
 
     if ! hash dialog 2>/dev/null; then
@@ -164,6 +171,11 @@ function getDistrib()
     # OPENSUSE
     elif [ "$OS" == "opensuse" ]; then
         PACMAN="zypper -n install"
+
+    # MACOS
+    elif [ "$OS" == "macos" ]; then
+        PACMAN="brew install"
+
     else
         echo "What distribution are you running? Please open a github issue!"
         exit 1
@@ -603,7 +615,9 @@ function version()
 # SCRIPT BEGIN
 
 detectOS
-is-root
+if [ "$OS" != "macos" ]; then
+    is-root
+fi
 
 # only one argument allowed
 if [ $# != 1 ]; then
