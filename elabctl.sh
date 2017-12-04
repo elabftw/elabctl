@@ -81,6 +81,23 @@ function bugreport()
     free -h
 }
 
+function detectOS()
+{
+    if test -e /etc/os-release; then
+        source /etc/os-release
+        OS=$ID
+
+    # for CentOS 6.8, see #368
+    elif grep -qi centos /etc/*-release; then
+        echo "It looks like you are using CentOS 6.8 which is using a very old kernel not compatible/stable with Docker. It is not recommended to use eLabFTW in Docker with this setup. Please have a look at the installation instructions without Docker."
+        exit 1
+
+    else
+        echo "Could not detect your OS. Please open a github issue!"
+        exit 1
+    fi
+}
+
 function getUserconf()
 {
     # do not overwrite a custom conf file
@@ -91,7 +108,7 @@ function getUserconf()
 
 function getDeps()
 {
-    if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ] || [ "$ID" == "linuxmint" ]; then
+    if [ "$OS" == "ubuntu" ] || [ "$OS" == "debian" ] || [ "$OS" == "linuxmint" ]; then
         echo "Synchronizing packages index. Please wait…"
         apt-get update >> $LOG_FILE 2>&1
     fi
@@ -120,52 +137,35 @@ function getDeps()
 
 function getDistrib()
 {
-    # let's first try to read /etc/os-release
-    if test -e /etc/os-release
-    then
+    # pacman = package manager
 
-        # source the file
-        . /etc/os-release
+    # DEBIAN / UBUNTU / MINT
+    if [ "$OS" == "ubuntu" ] || [ "$OS" == "debian" ] || [ "$OS" == "linuxmint" ]; then
+        PACMAN="apt-get -y install"
 
-        # pacman = package manager
+    # FEDORA
+    elif [ "$OS" == "fedora" ]; then
+        PACMAN="dnf -y install"
 
-        # DEBIAN / UBUNTU / MINT
-        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ] || [ "$ID" == "linuxmint" ]; then
-            PACMAN="apt-get -y install"
+    # CENTOS
+    elif [ "$OS" == "centos" ]; then
+        PACMAN="yum -y install"
+        # we need this to install python-pip
+        install-pkg epel-release
 
-        # FEDORA
-        elif [ "$ID" == "fedora" ]; then
-            PACMAN="dnf -y install"
+    # RED HAT
+    elif [ "$OS" == "rhel" ]; then
+        PACMAN="yum -y install"
 
-        # CENTOS
-        elif [ "$ID" == "centos" ]; then
-            PACMAN="yum -y install"
-            # we need this to install python-pip
-            install-pkg epel-release
+    # ARCH IS THE BEST
+    elif [ "$OS" == "arch" ]; then
+        PACMAN="pacman -Sy --noconfirm"
 
-        # RED HAT
-        elif [ "$ID" == "rhel" ]; then
-            PACMAN="yum -y install"
-
-        # ARCH IS THE BEST
-        elif [ "$ID" == "arch" ]; then
-            PACMAN="pacman -Sy --noconfirm"
-
-        # OPENSUSE
-        elif [ "$ID" == "opensuse" ]; then
-            PACMAN="zypper -n install"
-        else
-            echo "What distribution are you running? Please open a github issue!"
-            exit 1
-        fi
-    # for CentOS 6.8, see #368
-    elif grep -qi centos /etc/*-release
-    then
-        echo "It looks like you are using CentOS 6.8 which is using a very old kernel not compatible/stable with Docker. It is not recommended to use eLabFTW in Docker with this setup. Please have a look at the installation instructions without Docker."
-        exit 1
-
+    # OPENSUSE
+    elif [ "$OS" == "opensuse" ]; then
+        PACMAN="zypper -n install"
     else
-        echo "Could not load /etc/os-release to guess distribution. Please open a github issue!"
+        echo "What distribution are you running? Please open a github issue!"
         exit 1
     fi
 }
@@ -442,6 +442,15 @@ function install-pkg()
     $PACMAN "$1" >> $LOG_FILE 2>&1
 }
 
+function is-root()
+{
+    if [ $EUID != 0 ]; then
+        echo "You don't have sufficient permissions. Try with:"
+        echo "sudo elabctl $1"
+        exit 1
+    fi
+}
+
 function is-installed()
 {
     if [ ! -f $CONF_FILE ]; then
@@ -593,12 +602,8 @@ function version()
 
 # SCRIPT BEGIN
 
-# root only
-if [ $EUID != 0 ]; then
-    echo "You don't have sufficient permissions. Try with:"
-    echo "sudo elabctl $1"
-    exit 1
-fi
+detectOS
+is-root
 
 # only one argument allowed
 if [ $# != 1 ]; then
