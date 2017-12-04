@@ -3,6 +3,8 @@
 
 ###############################################################
 # CONFIGURATION
+# where is the source code?
+declare CODE_DIR="${HOME}/elabftw"
 # where do you want your backups to end up?
 declare BACKUP_DIR='/var/backups/elabftw'
 # where do we store the config file?
@@ -81,6 +83,35 @@ function bugreport()
     free -h
 }
 
+function compile-messages()
+{
+    for po_file in `find $CODE_DIR/app/locale/ -name "messages.po"`; do
+        echo "Compiling ${po_file}"
+        mo_file=${po_file/%.po/.mo}
+        msgfmt -o $mo_file $po_file
+    done
+}
+
+function detectOS()
+{
+    if test -e /etc/os-release; then
+        source /etc/os-release
+        OS=$ID
+
+    elif [ `uname` == "Darwin" ]; then
+        OS='macos'
+
+    # for CentOS 6.8, see #368
+    elif grep -qi centos /etc/*-release; then
+        echo "It looks like you are using CentOS 6.8 which is using a very old kernel not compatible/stable with Docker. It is not recommended to use eLabFTW in Docker with this setup. Please have a look at the installation instructions without Docker."
+        exit 1
+
+    else
+        echo "Could not detect your OS. Please open a github issue!"
+        exit 1
+    fi
+}
+
 function getUserconf()
 {
     # do not overwrite a custom conf file
@@ -91,9 +122,13 @@ function getUserconf()
 
 function getDeps()
 {
-    if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ] || [ "$ID" == "linuxmint" ]; then
+    if [ "$OS" == "ubuntu" ] || [ "$OS" == "debian" ] || [ "$OS" == "linuxmint" ]; then
         echo "Synchronizing packages index. Please wait…"
         apt-get update >> $LOG_FILE 2>&1
+    elif [ "$OS" == "macos" ] && ! hash brew 2>/dev/null; then
+        echo "Installing prerequisite package: brew. Please wait…"
+        # See https://brew.sh/
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     fi
 
     if ! hash dialog 2>/dev/null; then
@@ -116,56 +151,51 @@ function getDeps()
         install-pkg git
     fi
 
+    if ! hash gettext 2>/dev/null; then
+        echo "Installing prerequisite package: gettext. Please wait…"
+        install-pkg gettext
+        if [ "$OS" == "macos" ]; then
+            brew link --force gettext
+        fi
+    fi
 }
 
 function getDistrib()
 {
-    # let's first try to read /etc/os-release
-    if test -e /etc/os-release
-    then
+    # pacman = package manager
 
-        # source the file
-        . /etc/os-release
+    # DEBIAN / UBUNTU / MINT
+    if [ "$OS" == "ubuntu" ] || [ "$OS" == "debian" ] || [ "$OS" == "linuxmint" ]; then
+        PACMAN="apt-get -y install"
 
-        # pacman = package manager
+    # FEDORA
+    elif [ "$OS" == "fedora" ]; then
+        PACMAN="dnf -y install"
 
-        # DEBIAN / UBUNTU / MINT
-        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ] || [ "$ID" == "linuxmint" ]; then
-            PACMAN="apt-get -y install"
+    # CENTOS
+    elif [ "$OS" == "centos" ]; then
+        PACMAN="yum -y install"
+        # we need this to install python-pip
+        install-pkg epel-release
 
-        # FEDORA
-        elif [ "$ID" == "fedora" ]; then
-            PACMAN="dnf -y install"
+    # RED HAT
+    elif [ "$OS" == "rhel" ]; then
+        PACMAN="yum -y install"
 
-        # CENTOS
-        elif [ "$ID" == "centos" ]; then
-            PACMAN="yum -y install"
-            # we need this to install python-pip
-            install-pkg epel-release
+    # ARCH IS THE BEST
+    elif [ "$OS" == "arch" ]; then
+        PACMAN="pacman -Sy --noconfirm"
 
-        # RED HAT
-        elif [ "$ID" == "rhel" ]; then
-            PACMAN="yum -y install"
+    # OPENSUSE
+    elif [ "$OS" == "opensuse" ]; then
+        PACMAN="zypper -n install"
 
-        # ARCH IS THE BEST
-        elif [ "$ID" == "arch" ]; then
-            PACMAN="pacman -Sy --noconfirm"
-
-        # OPENSUSE
-        elif [ "$ID" == "opensuse" ]; then
-            PACMAN="zypper -n install"
-        else
-            echo "What distribution are you running? Please open a github issue!"
-            exit 1
-        fi
-    # for CentOS 6.8, see #368
-    elif grep -qi centos /etc/*-release
-    then
-        echo "It looks like you are using CentOS 6.8 which is using a very old kernel not compatible/stable with Docker. It is not recommended to use eLabFTW in Docker with this setup. Please have a look at the installation instructions without Docker."
-        exit 1
+    # MACOS
+    elif [ "$OS" == "macos" ]; then
+        PACMAN="brew install"
 
     else
-        echo "Could not load /etc/os-release to guess distribution. Please open a github issue!"
+        echo "What distribution are you running? Please open a github issue!"
         exit 1
     fi
 }
@@ -187,22 +217,23 @@ function help()
 
     Commands:
 
-        backup          Backup your installation
-        bugreport       Gather information about the system for a bug report
-        help            Show this text
-        info            Display the configuration variables and status
-        install         Configure and install required components
-        logs            Show logs of the containers
-        php-logs        Show last 15 lines of nginx error log
-        refresh         Recreate the containers if they need to be
-        restart         Restart the containers
-        self-update     Update the elabctl script
-        status          Show status of running containers
-        start           Start the containers
-        stop            Stop the containers
-        uninstall       Uninstall eLabFTW and purge data
-        update          Get the latest version of the containers
-        version         Display elabctl version
+        backup            Backup your installation
+        bugreport         Gather information about the system for a bug report
+        compile-messages  Compile translation files
+        help              Show this text
+        info              Display the configuration variables and status
+        install           Configure and install required components
+        logs              Show logs of the containers
+        php-logs          Show last 15 lines of nginx error log
+        refresh           Recreate the containers if they need to be
+        restart           Restart the containers
+        self-update       Update the elabctl script
+        status            Show status of running containers
+        start             Start the containers
+        stop              Stop the containers
+        uninstall         Uninstall eLabFTW and purge data
+        update            Get the latest version of the containers
+        version           Display elabctl version
 
     See 'man elabctl' for more informations."
 }
@@ -442,6 +473,15 @@ function install-pkg()
     $PACMAN "$1" >> $LOG_FILE 2>&1
 }
 
+function is-root()
+{
+    if [ $EUID != 0 ]; then
+        echo "You don't have sufficient permissions. Try with:"
+        echo "sudo elabctl $1"
+        exit 1
+    fi
+}
+
 function is-installed()
 {
     if [ ! -f $CONF_FILE ]; then
@@ -593,11 +633,9 @@ function version()
 
 # SCRIPT BEGIN
 
-# root only
-if [ $EUID != 0 ]; then
-    echo "You don't have sufficient permissions. Try with:"
-    echo "sudo elabctl $1"
-    exit 1
+detectOS
+if [ "$OS" != "macos" ]; then
+    is-root
 fi
 
 # only one argument allowed
@@ -620,7 +658,7 @@ esac
 
 # available commands
 declare -A commands
-for valid in backup bugreport help info infos install logs php-logs self-update start status stop refresh restart uninstall update upgrade usage version
+for valid in backup bugreport compile-messages help info infos install logs php-logs self-update start status stop refresh restart uninstall update upgrade usage version
 do
     commands[$valid]=1
 done
