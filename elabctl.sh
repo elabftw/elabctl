@@ -3,6 +3,8 @@
 
 ###############################################################
 # CONFIGURATION
+# where is the source code?
+declare CODE_DIR="${HOME}/elabftw"
 # where do you want your backups to end up?
 declare BACKUP_DIR='/var/backups/elabftw'
 # where do we store the config file?
@@ -81,6 +83,15 @@ function bugreport()
     free -h
 }
 
+function compile-messages()
+{
+    for po_file in `find $CODE_DIR/app/locale/ -name "messages.po"`; do
+        echo "Compiling ${po_file}"
+        mo_file=${po_file/%.po/.mo}
+        msgfmt -o $mo_file $po_file
+    done
+}
+
 function detectOS()
 {
     if test -e /etc/os-release; then
@@ -140,6 +151,13 @@ function getDeps()
         install-pkg git
     fi
 
+    if ! hash gettext 2>/dev/null; then
+        echo "Installing prerequisite package: gettext. Please wait…"
+        install-pkg gettext
+        if [ "$OS" == "macos" ]; then
+            brew link --force gettext
+        fi
+    fi
 }
 
 function getDistrib()
@@ -199,22 +217,23 @@ function help()
 
     Commands:
 
-        backup          Backup your installation
-        bugreport       Gather information about the system for a bug report
-        help            Show this text
-        info            Display the configuration variables and status
-        install         Configure and install required components
-        logs            Show logs of the containers
-        php-logs        Show last 15 lines of nginx error log
-        refresh         Recreate the containers if they need to be
-        restart         Restart the containers
-        self-update     Update the elabctl script
-        status          Show status of running containers
-        start           Start the containers
-        stop            Stop the containers
-        uninstall       Uninstall eLabFTW and purge data
-        update          Get the latest version of the containers
-        version         Display elabctl version
+        backup            Backup your installation
+        bugreport         Gather information about the system for a bug report
+        compile-messages  Compile translation files
+        help              Show this text
+        info              Display the configuration variables and status
+        install           Configure and install required components
+        logs              Show logs of the containers
+        php-logs          Show last 15 lines of nginx error log
+        refresh           Recreate the containers if they need to be
+        restart           Restart the containers
+        self-update       Update the elabctl script
+        status            Show status of running containers
+        start             Start the containers
+        stop              Stop the containers
+        uninstall         Uninstall eLabFTW and purge data
+        update            Get the latest version of the containers
+        version           Display elabctl version
 
     See 'man elabctl' for more informations."
 }
@@ -639,7 +658,7 @@ esac
 
 # available commands
 declare -A commands
-for valid in backup bugreport help info infos install logs php-logs self-update start status stop refresh restart uninstall update upgrade usage version
+for valid in backup bugreport compile-messages help info infos install logs php-logs self-update start status stop refresh restart uninstall update upgrade usage version
 do
     commands[$valid]=1
 done
