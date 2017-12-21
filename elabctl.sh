@@ -26,14 +26,13 @@ fi
 # display ascii logo
 function ascii()
 {
-    clear
     echo ""
-    echo "       _         _       __  _             "
-    echo "  ___ | |  ____ | |__   / _|| |_ __      __"
-    echo " / _ \| | / _ ||| |_ \ | |_ | __|\ \ /\ / /"
-    echo "|  __/| || (_| || |_) ||  _|| |_  \ V  V / "
-    echo " \___||_| \__,_||_.__/ |_|   \__|  \_/\_/  "
-    echo ""
+    echo "      _          _     _____ _______        __"
+    echo "  ___| |    __ _| |__ |  ___|_   _\ \      / /"
+    echo " / _ \ |   / _| | '_ \| |_    | |  \ \ /\ / / "
+    echo "|  __/ |__| (_| | |_) |  _|   | |   \ V  V /  "
+    echo " \___|_____\__,_|_.__/|_|     |_|    \_/\_/   "
+    echo "                                              "
     echo "If something goes wrong, have a look at ${LOG_FILE}!"
 }
 
