@@ -53,7 +53,7 @@ function backup()
     local -r dumpfile="${BACKUP_DIR}/mysql_dump-${date}.sql"
 
     # dump sql
-    docker exec mysql bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql $MYSQL_DATABASE' > /dev/null 2>&1
+    docker exec mysql bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql $MYSQL_DATABASE' || echo ">> Containers must be running to do the backup!"
     # copy it from the container to the host
     docker cp mysql:dump.sql "$dumpfile"
     # compress it to the max
@@ -567,9 +567,12 @@ function uninstall()
 
 function update()
 {
-    echo "Before updating, a backup will be created."
-    backup
-    echo "Backup done, now updating."
+    echo "Do you want to make a backup before updating? (y/N)"
+    read dobackup
+    if [ "$dobackup" = "y" ]; then
+        backup
+        echo "Backup done, now updating."
+    fi
     docker-compose -f "$CONF_FILE" pull
     restart
 }
