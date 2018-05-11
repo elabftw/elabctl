@@ -1,5 +1,10 @@
 # Changelog for elabctl
 
+## Version 0.6.4
+
+* Fix install on CentOS (thanks @M4aurice) (#14)
+* Ask before doing backup
+
 ## Version 0.2.2
 
 * Fix install on RHEL (thanks @folf) (#7)
