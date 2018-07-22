@@ -9,6 +9,9 @@ declare CONF_FILE='/etc/elabftw.yml'
 # default data directory
 declare DATA_DIR='/var/elabftw'
 
+# default conf file is no conf file
+declare ELABCTL_CONF_FILE="no configuration file found!"
+
 # display ascii logo
 function ascii()
 {
@@ -391,11 +394,13 @@ function start()
 
 function status()
 {
+    is-installed
     docker-compose -f "$CONF_FILE" ps
 }
 
 function stop()
 {
+    is-installed
     docker-compose -f "$CONF_FILE" down
 }
 
@@ -457,6 +462,7 @@ function uninstall()
 
 function update()
 {
+    is-installed
     echo "Do you want to make a backup before updating? (y/N)"
     read dobackup
     if [ "$dobackup" = "y" ]; then
