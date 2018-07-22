@@ -95,13 +95,14 @@ function checkDeps()
 function getUserconf()
 {
     # download the config file in the current directory
-    echo "Downloading the config file for elabctl in current directory..."
-    if [ -f ${ELABCTL_CONF_FILE} ]; then
-        echo "File already present. Not overwriting. Abort! Abort!"
-        exit 0
+    echo "Downloading the config file 'elabctl.conf' in current directory..."
+    if [ -f elabctl.conf ]; then
+        mv -v elabctl.conf elabctl.conf.old
     fi
     curl -Ls https://github.com/elabftw/elabctl/raw/master/elabctl.conf -o elabctl.conf
-    echo "Downloaded ${ELABCTL_CONF_FILE}. Edit it and place it in ~/.config or /etc. Or leave it there and always use elabctl from this directory."
+    echo "Downloaded elabctl.conf."
+    echo "Edit it and move it in ~/.config or /etc."
+    echo "Or leave it there and always use elabctl from this directory."
     echo "Then do 'elabctl install' again."
 }
 
@@ -152,7 +153,12 @@ function infos()
 # install pip and docker-compose, get elabftw.yml and configure it with sed
 function install()
 {
-    ascii
+    # do nothing if there are files in there
+    if [ "$(ls -A $DATA_DIR)" ]; then
+        echo "It looks like eLabFTW is already installed. Delete the ${DATA_DIR} folder to reinstall."
+        exit 1
+    fi
+
     checkDeps
 
     # init vars
@@ -175,9 +181,6 @@ function install()
     title="Install eLabFTW"
     backtitle="eLabFTW installation"
 
-    #getDistrib
-    #getDeps
-
     # show welcome screen and ask if defaults are fine
     if [ "$unattended" -eq 0 ]; then
         # because answering No to dialog equals exit != 0
@@ -191,7 +194,7 @@ function install()
         The main configuration file will be created at: \Z4${CONF_FILE}\Zn\n
         A directory holding elabftw data (mysql + uploaded files) will be created at: \Z4${DATA_DIR}\Zn\n
         The backups will be created at: \Z4${BACKUP_DIR}\Zn\n\n
-        If you wish to change the defaults paths, quit now and edit the file \Z4${ELABCTL_CONF_FILE}\Zn" 0 0
+        If you wish to change these settings, quit now and edit the file \Z4elabctl.conf\Zn" 0 0
         if [ $? -eq 1 ]; then
             getUserconf
             exit 0
@@ -199,15 +202,7 @@ function install()
     fi
 
     # create the data dir
-    mkdir -p $DATA_DIR
-
-    # do nothing if there are files in there
-    if [ "$(ls -A $DATA_DIR)" ]; then
-        echo "It looks like eLabFTW is already installed. Delete the ${DATA_DIR} folder to reinstall."
-        exit 1
-    fi
-
-    #getUserconf
+    mkdir -pv $DATA_DIR
 
     if [ "$unattended" -eq 0 ]; then
         set +e
@@ -511,16 +506,19 @@ esac
 # Now we load the configuration file for custom directories set by user
 if [ -f /etc/elabctl.conf ]; then
     source /etc/elabctl.conf
+    ELABCTL_CONF_FILE="/etc/elabctl.conf"
 fi
 
 # elabctl.conf in ~/.config
 if [ -f ${HOME}/.config/elabctl.conf ]; then
     source ${HOME}/.config/elabctl.conf
+    ELABCTL_CONF_FILE="${HOME}/.config/elabctl.conf"
 fi
 
 # if elabctl is in current dir it has top priority
 if [ -f elabctl.conf ]; then
     source elabctl.conf
+    ELABCTL_CONF_FILE="elabctl.conf"
 fi
 
 # check that the path for the data dir is absolute
@@ -540,9 +538,10 @@ done
 if [[ ${commands[$1]} ]]; then
     # exit if variable isn't set
     set -u
-    version
-    echo "Using configuration file: "$CONF_FILE""
-    echo ""
+    ascii
+    echo "Using elabctl configuration file: "$ELABCTL_CONF_FILE""
+    echo "Using elabftw configuration file: "$CONF_FILE""
+    echo "---------------------------------------------"
     $1
 else
     help
