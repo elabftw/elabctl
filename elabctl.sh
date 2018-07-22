@@ -1,27 +1,13 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
+declare -r ELABCTL_VERSION='1.0.0'
 
-###############################################################
-# CONFIGURATION
-# where do you want your backups to end up?
+# default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
-# where do we store the config file?
+# default config file for docker-compose
 declare CONF_FILE='/etc/elabftw.yml'
-# where do we store the MySQL database and the uploaded files?
+# default data directory
 declare DATA_DIR='/var/elabftw'
-# where do we store the logs?
-declare LOG_FILE='/var/log/elabftw.log'
-# END CONFIGURATION
-###############################################################
-
-declare -r MAN_FILE='/usr/share/man/man1/elabctl.1.gz'
-declare -r ELABCTL_VERSION='0.6.4'
-declare -r USER_CONF_FILE='/etc/elabctl.conf'
-
-# Now we load the configuration file for custom directories set by user
-if [ -f ${USER_CONF_FILE} ]; then
-    source ${USER_CONF_FILE}
-fi
 
 # display ascii logo
 function ascii()
@@ -33,7 +19,7 @@ function ascii()
     echo "|  __/ |__| (_| | |_) |  _|   | |   \ V  V /  "
     echo " \___|_____\__,_|_.__/|_|     |_|    \_/\_/   "
     echo "                                              "
-    echo "If something goes wrong, have a look at ${LOG_FILE}!"
+    echo ""
 }
 
 # create a mysqldump and a zip archive of the uploaded files
@@ -80,99 +66,43 @@ function bugreport()
     free -h
 }
 
-function getUserconf()
+function checkDeps()
 {
-    # do not overwrite a custom conf file
-    if [ ! -f $USER_CONF_FILE ]; then
-        wget -qO- https://github.com/elabftw/elabctl/raw/master/elabctl.conf > $USER_CONF_FILE
-    fi
-}
-
-function getDeps()
-{
-    if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ] || [ "$ID" == "linuxmint" ]; then
-        echo "Synchronizing packages index. Please wait…"
-        apt-get update >> $LOG_FILE 2>&1
-    fi
+    need_to_quit=0
 
     if ! hash dialog 2>/dev/null; then
-        echo "Installing prerequisite package: dialog. Please wait…"
-        install-pkg dialog
+        echo "Error: dialog not installed. Please install the program 'dialog'"
+        need_to_quit=1
     fi
-
-    if ! hash zip 2>/dev/null; then
-        echo "Installing prerequisite package: zip. Please wait…"
-        install-pkg zip
+    if ! hash docker-compose 2>/dev/null; then
+        echo "Error: docker-compose not installed. Please install the program 'docker-compose'"
+        need_to_quit=1
     fi
-
-    if ! hash wget 2>/dev/null; then
-        echo "Installing prerequisite package: wget. Please wait…"
-        install-pkg wget
-    fi
-
     if ! hash git 2>/dev/null; then
-        echo "Installing prerequisite package: git. Please wait…"
-        install-pkg git
+        echo "Error: git not installed. Please install the program 'git'"
+        need_to_quit=1
+    fi
+    if ! hash zip 2>/dev/null; then
+        echo "Error: zip not installed. Please install the program 'zip'"
+        need_to_quit=1
     fi
 
-}
-
-function getDistrib()
-{
-    # let's first try to read /etc/os-release
-    if test -e /etc/os-release
-    then
-
-        # source the file
-        . /etc/os-release
-
-        # pacman = package manager
-
-        # DEBIAN / UBUNTU / MINT
-        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ] || [ "$ID" == "linuxmint" ]; then
-            PACMAN="apt-get -y install"
-
-        # FEDORA
-        elif [ "$ID" == "fedora" ]; then
-            PACMAN="dnf -y install"
-
-        # CENTOS
-        elif [ "$ID" == "centos" ]; then
-            PACMAN="yum -y install"
-            # we need this to install python-pip
-            install-pkg epel-release
-
-        # RED HAT
-        elif [ "$ID" == "rhel" ]; then
-            PACMAN="yum -y install"
-
-        # ARCH IS THE BEST
-        elif [ "$ID" == "arch" ]; then
-            PACMAN="pacman -Sy --noconfirm"
-
-        # OPENSUSE
-        elif [ "$ID" == "opensuse" ]; then
-            PACMAN="zypper -n install"
-        else
-            echo "What distribution are you running? Please open a github issue!"
-            exit 1
-        fi
-    # for CentOS 6.8, see #368
-    elif grep -qi centos /etc/*-release
-    then
-        echo "It looks like you are using CentOS 6.8 which is using a very old kernel not compatible/stable with Docker. It is not recommended to use eLabFTW in Docker with this setup. Please have a look at the installation instructions without Docker."
-        exit 1
-
-    else
-        echo "Could not load /etc/os-release to guess distribution. Please open a github issue!"
+    if [ $need_to_quit -eq 1 ]; then
         exit 1
     fi
 }
 
-# install manpage
-function getMan()
+function getUserconf()
 {
-    wget -qO- https://github.com/elabftw/elabctl/raw/master/elabctl.1.gz > $MAN_FILE
+    # download the config file in the current directory
+    echo "Downloading the config file for elabctl in current directory..."
+    if [ -f ${ELABCTL_CONF_FILE} ]; then
+        echo "File already present. Not overwriting. Abort! Abort!"
+        exit 0
+    fi
+    curl -Ls https://github.com/elabftw/elabctl/raw/master/elabctl.conf -o elabctl.conf
+    echo "Downloaded ${ELABCTL_CONF_FILE}. Edit it and place it in ~/.config or /etc. Or leave it there and always use elabctl from this directory."
+    echo "Then do 'elabctl install' again."
 }
 
 function help()
@@ -202,16 +132,13 @@ function help()
         uninstall       Uninstall eLabFTW and purge data
         update          Get the latest version of the containers
         version         Display elabctl version
-
-    See 'man elabctl' for more informations."
+    "
 }
 
 function info()
 {
     echo "Backup directory: ${BACKUP_DIR}"
     echo "Data directory: ${DATA_DIR}"
-    echo "Log file: ${LOG_FILE}"
-    echo "Man file: ${MAN_FILE}"
     echo ""
     echo "Status:"
     status
@@ -225,6 +152,9 @@ function infos()
 # install pip and docker-compose, get elabftw.yml and configure it with sed
 function install()
 {
+    ascii
+    checkDeps
+
     # init vars
     # mysql passwords
     declare rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
@@ -245,9 +175,8 @@ function install()
     title="Install eLabFTW"
     backtitle="eLabFTW installation"
 
-    ascii
-    getDistrib
-    getDeps
+    #getDistrib
+    #getDeps
 
     # show welcome screen and ask if defaults are fine
     if [ "$unattended" -eq 0 ]; then
@@ -260,16 +189,11 @@ function install()
 
         dialog --colors --backtitle "$backtitle" --title "$title" --yes-label "Looks good to me" --no-label "Download example conf and quit" --yesno "\nHere is what will happen:\n
         The main configuration file will be created at: \Z4${CONF_FILE}\Zn\n
-        The configuration file for elabctl will be created at: \Z4${USER_CONF_FILE}\Zn\n
         A directory holding elabftw data (mysql + uploaded files) will be created at: \Z4${DATA_DIR}\Zn\n
-        A log file of the installation process will be created at: \Z4${LOG_FILE}\Zn\n
-        A man page for elabctl will be added to your system\n
         The backups will be created at: \Z4${BACKUP_DIR}\Zn\n\n
-        If you wish to change the defaults paths, quit now and edit the file \Z4${USER_CONF_FILE}\Zn" 0 0
+        If you wish to change the defaults paths, quit now and edit the file \Z4${ELABCTL_CONF_FILE}\Zn" 0 0
         if [ $? -eq 1 ]; then
-            echo "Downloading an example configuration file to \Z4${USER_CONF_FILE}\Zn"
             getUserconf
-            echo "Done. You can now edit this file and restart the installation afterwards."
             exit 0
         fi
     fi
@@ -283,8 +207,7 @@ function install()
         exit 1
     fi
 
-    getMan
-    getUserconf
+    #getUserconf
 
     if [ "$unattended" -eq 0 ]; then
         set +e
@@ -353,22 +276,11 @@ function install()
 
     set -e
 
-    echo 10 | dialog --backtitle "$backtitle" --title "Installing required packages" --gauge "Installing python-pip" 20 80
-    install-pkg python-pip >> "$LOG_FILE" 2>&1
-
-    echo 20 | dialog --backtitle "$backtitle" --title "Installing required packages" --gauge "Installing python-setuptools" 20 80
-    install-pkg python-setuptools >> "$LOG_FILE" 2>&1
-
-    echo 30 | dialog --backtitle "$backtitle" --title "Installing required packages" --gauge "Installing docker-compose" 20 80
-    # make sure we have the latest pip version
-    pip install --upgrade --force-reinstall pip==9.0.3 >> "$LOG_FILE" 2>&1
-    pip install --upgrade docker-compose >> "$LOG_FILE" 2>&1
-
-    echo 40 | dialog --backtitle "$backtitle" --title "$title" --gauge "Creating folder structure" 20 80
-    mkdir -pv ${DATA_DIR}/{web,mysql} >> "$LOG_FILE" 2>&1
-    chmod -R 700 ${DATA_DIR} >> "$LOG_FILE" 2>&1
-    chown -v 999:999 ${DATA_DIR}/mysql >> "$LOG_FILE" 2>&1
-    chown -v 100:101 ${DATA_DIR}/web >> "$LOG_FILE" 2>&1
+    echo 40 | dialog --backtitle "$backtitle" --title "$title" --gauge "Creating folder structure. You will be asked for your password (bottom left of the screen)." 20 80
+    mkdir -pv ${DATA_DIR}/{web,mysql}
+    chmod -R 700 ${DATA_DIR}
+    sudo chown -v 999:999 ${DATA_DIR}/mysql
+    sudo chown -v 100:101 ${DATA_DIR}/web
     sleep 1
 
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Grabbing the docker-compose configuration file" 20 80
@@ -378,7 +290,7 @@ function install()
         \cp $CONF_FILE ${CONF_FILE}.old
     fi
 
-    wget -q https://raw.githubusercontent.com/elabftw/elabimg/master/src/docker-compose.yml-EXAMPLE -O "$CONF_FILE"
+    curl -sL https://raw.githubusercontent.com/elabftw/elabimg/master/src/docker-compose.yml-EXAMPLE -o "$CONF_FILE"
     # setup restrictive permissions
     chmod 600 "$CONF_FILE"
     sleep 1
@@ -412,7 +324,7 @@ function install()
     # install letsencrypt and request a certificate
     if  [ $hasdomain -eq 1 ] && [ $usele -eq 1 ]; then
         echo 60 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing letsencrypt in ${DATA_DIR}/letsencrypt" 20 80
-        git clone --depth 1 --branch master https://github.com/letsencrypt/letsencrypt ${DATA_DIR}/letsencrypt >> $LOG_FILE 2>&1
+        git clone --depth 1 --branch master https://github.com/letsencrypt/letsencrypt ${DATA_DIR}/letsencrypt
         echo 65 | dialog --backtitle "$backtitle" --title "$title" --gauge "Allowing traffic on port 443" 20 80
         ufw allow 443/tcp || true
         echo 70 | dialog --backtitle "$backtitle" --title "$title" --gauge "Getting the SSL certificate" 20 80
@@ -423,29 +335,22 @@ function install()
     if [ $unattended -eq 0 ]; then
         dialog --colors --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
         \Z1====>\Zn Start the containers with: \Zb\Z4elabctl start\Zn\n\n
-        It will take a minute or two to run at first.\n\n
         \Z1====>\Zn Go to https://$servername once started!\n\n
         In the mean time, check out what to do after an install:\n
         \Z1====>\Zn https://doc.elabftw.net/postinstall.html\n\n
-        The log file of the install is here: $LOG_FILE\n
         The configuration file for docker-compose is here: \Z4$CONF_FILE\Zn\n
         Your data folder is: \Z4${DATA_DIR}\Zn. It contains the MySQL database and uploaded files.\n
-        You can use 'docker logs -f elabftw' to follow the starting up of the container.\n
-        See 'man elabctl' to backup or update." 20 80
+        You can use 'docker logs -f elabftw' to follow the starting up of the container.\n" 20 80
     fi
 
-}
-
-function install-pkg()
-{
-    $PACMAN "$1" >> $LOG_FILE 2>&1
 }
 
 function is-installed()
 {
     if [ ! -f $CONF_FILE ]; then
         echo "###### ERROR ##########################################################"
-        echo "Configuration file could not be found! Did you run the install command?"
+        echo "Configuration file (${CONF_FILE})  could not be found!"
+        echo "Did you run the install command?"
         echo "#######################################################################"
         exit 1
     fi
@@ -476,10 +381,11 @@ function restart()
 
 function self-update()
 {
-    getMan
-    wget -qO- https://raw.githubusercontent.com/elabftw/elabctl/master/elabctl.sh > /tmp/elabctl
-    chmod +x /tmp/elabctl
-    mv /tmp/elabctl /usr/bin/elabctl
+    me=$(which "$0")
+    echo "Downloading new version to /tmp/elabctl"
+    curl -sL https://raw.githubusercontent.com/elabftw/elabctl/master/elabctl.sh -o /tmp/elabctl
+    chmod -v +x /tmp/elabctl
+    mv -v /tmp/elabctl "$me"
 }
 
 function start()
@@ -526,12 +432,6 @@ function uninstall()
 
     clear
 
-    # remove man page
-    if [ -f "$MAN_FILE" ]; then
-        rm -f "$MAN_FILE"
-        echo "[x] Deleted $MAN_FILE"
-    fi
-
     # remove config file and eventual backup
     if [ -f "${CONF_FILE}.old" ]; then
         rm -f "${CONF_FILE}.old"
@@ -540,11 +440,6 @@ function uninstall()
     if [ -f "$CONF_FILE" ]; then
         rm -f "$CONF_FILE"
         echo "[x] Deleted $CONF_FILE"
-    fi
-    # remove logfile
-    if [ -f "$LOG_FILE" ]; then
-        rm -f "$LOG_FILE"
-        echo "[x] Deleted $LOG_FILE"
     fi
     # remove data directory
     if [ -d "$DATA_DIR" ]; then
@@ -595,13 +490,6 @@ function version()
 
 # SCRIPT BEGIN
 
-# root only
-if [ $EUID != 0 ]; then
-    echo "You don't have sufficient permissions. Try with:"
-    echo "sudo elabctl $1"
-    exit 1
-fi
-
 # only one argument allowed
 if [ $# != 1 ]; then
     help
@@ -619,6 +507,28 @@ case "$1" in
     exit 0
     ;;
 esac
+
+# Now we load the configuration file for custom directories set by user
+if [ -f /etc/elabctl.conf ]; then
+    source /etc/elabctl.conf
+fi
+
+# elabctl.conf in ~/.config
+if [ -f ${HOME}/.config/elabctl.conf ]; then
+    source ${HOME}/.config/elabctl.conf
+fi
+
+# if elabctl is in current dir it has top priority
+if [ -f elabctl.conf ]; then
+    source elabctl.conf
+fi
+
+# check that the path for the data dir is absolute
+if [ "${DATA_DIR:0:1}" != "/" ]; then
+    echo "Error in config file: DATA_DIR is not an absolute path!"
+    echo "Edit elabctl.conf and add a full path to the directory."
+    exit 1
+fi
 
 # available commands
 declare -A commands
