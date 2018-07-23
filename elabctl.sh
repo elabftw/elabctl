@@ -297,7 +297,6 @@ function install()
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Adjusting configuration" 20 80
     secret_key=$(curl --silent https://demo.elabftw.net/install/generateSecretKey.php)
     if [ "${#secret_key}" -eq 0 ]; then
-        echo "Error getting secret key from remote server! Maybe demo.elabftw.net is down?" >> "$LOG_FILE" 2>&1
         echo "Error getting secret key from remote server! Maybe demo.elabftw.net is down?"
         exit 1
     fi
