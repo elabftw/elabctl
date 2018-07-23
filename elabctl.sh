@@ -440,21 +440,21 @@ function uninstall()
 
     # remove config file and eventual backup
     if [ -f "${CONF_FILE}.old" ]; then
-        rm -f "${CONF_FILE}.old"
+        rm -vf "${CONF_FILE}.old"
         echo "[x] Deleted ${CONF_FILE}.old"
     fi
     if [ -f "$CONF_FILE" ]; then
-        rm -f "$CONF_FILE"
+        rm -vf "$CONF_FILE"
         echo "[x] Deleted $CONF_FILE"
     fi
     # remove data directory
     if [ -d "$DATA_DIR" ]; then
-        rm -rf "$DATA_DIR"
+        sudo rm -rvf "$DATA_DIR"
         echo "[x] Deleted $DATA_DIR"
     fi
     # remove backup dir
     if [ $rmbackup == 'y' ] && [ -d "$BACKUP_DIR" ]; then
-        rm -rf "$BACKUP_DIR"
+        rm -rvf "$BACKUP_DIR"
         echo "[x] Deleted $BACKUP_DIR"
     fi
 
