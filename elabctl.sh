@@ -299,8 +299,11 @@ function install()
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Adjusting configuration" 20 80
     secret_key=$(curl --silent https://demo.elabftw.net/install/generateSecretKey.php)
     if [ "${#secret_key}" -eq 0 ]; then
-        echo "Error getting secret key from remote server! Maybe demo.elabftw.net is down?"
-        exit 1
+        secret_key=$(curl --silent https://get.elabftw.net/?key)
+        if [ "${#secret_key}" -eq 0 ]; then
+            echo "Error getting secret key from demo.elabftw.net or get.elabftw.net! Maybe the server is down?"
+            exit 1
+        fi
     fi
     sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" $CONF_FILE
     sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$servername/" $CONF_FILE
@@ -329,8 +332,11 @@ function install()
     if  [ $hasdomain -eq 1 ] && [ $usele -eq 1 ]; then
         echo 60 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing letsencrypt in ${DATA_DIR}/letsencrypt" 20 80
         git clone --depth 1 --branch master https://github.com/letsencrypt/letsencrypt ${DATA_DIR}/letsencrypt
+        # because by default on DO drop it's closed
         echo 65 | dialog --backtitle "$backtitle" --title "$title" --gauge "Allowing traffic on port 443" 20 80
         ufw allow 443/tcp || true
+        # also open the port 80 for the cert request
+        ufw allow 80/tcp || true
         echo 70 | dialog --backtitle "$backtitle" --title "$title" --gauge "Getting the SSL certificate" 20 80
         cd ${DATA_DIR}/letsencrypt && ./letsencrypt-auto certonly --standalone --email "$email" --agree-tos --non-interactive -d "$servername"
     fi
