@@ -156,13 +156,13 @@ function infos()
 # install pip and docker-compose, get elabftw.yml and configure it with sed
 function install()
 {
+    checkDeps
+
     # do nothing if there are files in there
-    if [ "$(ls -A $DATA_DIR)" ]; then
+    if [ "$(ls -A $DATA_DIR 2>/dev/null)" ]; then
         echo "It looks like eLabFTW is already installed. Delete the ${DATA_DIR} folder to reinstall."
         exit 1
     fi
-
-    checkDeps
 
     # init vars
     # mysql passwords
@@ -276,10 +276,12 @@ function install()
 
     echo 40 | dialog --backtitle "$backtitle" --title "$title" --gauge "Creating folder structure. You will be asked for your password (bottom left of the screen)." 20 80
     mkdir -pv ${DATA_DIR}/{web,mysql}
-    chmod -R 700 ${DATA_DIR}
+    chmod -Rv 700 ${DATA_DIR}
+    echo "Executing: sudo chown -v 999:999 ${DATA_DIR}/mysql"
     sudo chown -v 999:999 ${DATA_DIR}/mysql
+    echo "Executing: sudo chown -v 100:101 ${DATA_DIR}/web"
     sudo chown -v 100:101 ${DATA_DIR}/web
-    sleep 1
+    sleep 2
 
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Grabbing the docker-compose configuration file" 20 80
     # make a copy of an existing conf file
