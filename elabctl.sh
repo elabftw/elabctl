@@ -31,7 +31,10 @@ function backup()
     echo "Using backup directory $BACKUP_DIR"
 
     if ! ls -A "${BACKUP_DIR}" > /dev/null 2>&1; then
-        mkdir -p "${BACKUP_DIR}"
+        mkdir -pv "${BACKUP_DIR}"
+        if [ $? -eq 1 ]; then
+            sudo mkdir -pv ${BACKUP_DIR}
+        fi
     fi
 
     set -e
@@ -206,6 +209,9 @@ function install()
 
     # create the data dir
     mkdir -pv $DATA_DIR
+    if [ $? -eq 1 ]; then
+        sudo mkdir -pv $DATA_DIR
+    fi
 
     if [ "$unattended" -eq 0 ]; then
         set +e
@@ -275,8 +281,8 @@ function install()
     set -e
 
     echo 40 | dialog --backtitle "$backtitle" --title "$title" --gauge "Creating folder structure. You will be asked for your password (bottom left of the screen)." 20 80
-    mkdir -pv ${DATA_DIR}/{web,mysql}
-    chmod -Rv 700 ${DATA_DIR}
+    sudo mkdir -pv ${DATA_DIR}/{web,mysql}
+    sudo chmod -Rv 700 ${DATA_DIR}
     echo "Executing: sudo chown -v 999:999 ${DATA_DIR}/mysql"
     sudo chown -v 999:999 ${DATA_DIR}/mysql
     echo "Executing: sudo chown -v 100:101 ${DATA_DIR}/web"
