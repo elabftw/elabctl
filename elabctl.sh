@@ -10,7 +10,7 @@ declare CONF_FILE='/etc/elabftw.yml'
 declare DATA_DIR='/var/elabftw'
 
 # default conf file is no conf file
-declare ELABCTL_CONF_FILE="no configuration file found!"
+declare ELABCTL_CONF_FILE="using default values (no config file found)"
 
 # display ascii logo
 function ascii()
