@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='1.0.0'
+declare -r ELABCTL_VERSION='1.0.1'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
 # default config file for docker-compose
 declare CONF_FILE='/etc/elabftw.yml'
+declare TMP_CONF_FILE='/tmp/elabftw.yml'
 # default data directory
 declare DATA_DIR='/var/elabftw'
 
@@ -296,9 +297,7 @@ function install()
         \cp $CONF_FILE ${CONF_FILE}.old
     fi
 
-    curl -sL https://raw.githubusercontent.com/elabftw/elabimg/master/src/docker-compose.yml-EXAMPLE -o "$CONF_FILE"
-    # setup restrictive permissions
-    chmod 600 "$CONF_FILE"
+    curl -sL https://raw.githubusercontent.com/elabftw/elabimg/master/src/docker-compose.yml-EXAMPLE -o "$TMP_CONF_FILE"
     sleep 1
 
     # elab config
@@ -311,26 +310,26 @@ function install()
             exit 1
         fi
     fi
-    sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" $CONF_FILE
-    sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$servername/" $CONF_FILE
-    sed -i -e "s:/var/elabftw:${DATA_DIR}:" $CONF_FILE
+    sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" $TMP_CONF_FILE
+    sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$servername/" $TMP_CONF_FILE
+    sed -i -e "s:/var/elabftw:${DATA_DIR}:" $TMP_CONF_FILE
 
     # disable https
     if [ $usehttps = 0 ]; then
-        sed -i -e "s/DISABLE_HTTPS=false/DISABLE_HTTPS=true/" $CONF_FILE
+        sed -i -e "s/DISABLE_HTTPS=false/DISABLE_HTTPS=true/" $TMP_CONF_FILE
     fi
 
     # enable letsencrypt
     if [ $hasdomain -eq 1 ]; then
         # even if we don't use Let's Encrypt, for using TLS certs we need this to be true, and volume mounted
-        sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" $CONF_FILE
-        sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" $CONF_FILE
+        sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" $TMP_CONF_FILE
+        sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" $TMP_CONF_FILE
     fi
 
     # mysql config
-    sed -i -e "s/MYSQL_ROOT_PASSWORD=secr3t/MYSQL_ROOT_PASSWORD=$rootpass/" $CONF_FILE
-    sed -i -e "s/MYSQL_PASSWORD=secr3t/MYSQL_PASSWORD=$pass/" $CONF_FILE
-    sed -i -e "s/DB_PASSWORD=secr3t/DB_PASSWORD=$pass/" $CONF_FILE
+    sed -i -e "s/MYSQL_ROOT_PASSWORD=secr3t/MYSQL_ROOT_PASSWORD=$rootpass/" $TMP_CONF_FILE
+    sed -i -e "s/MYSQL_PASSWORD=secr3t/MYSQL_PASSWORD=$pass/" $TMP_CONF_FILE
+    sed -i -e "s/DB_PASSWORD=secr3t/DB_PASSWORD=$pass/" $TMP_CONF_FILE
 
     sleep 1
 
@@ -346,6 +345,13 @@ function install()
         echo 70 | dialog --backtitle "$backtitle" --title "$title" --gauge "Getting the SSL certificate" 20 80
         cd ${DATA_DIR}/letsencrypt && ./letsencrypt-auto certonly --standalone --email "$email" --agree-tos --non-interactive -d "$servername"
     fi
+
+    # setup restrictive permissions
+    chmod 600 "$TMP_CONF_FILE"
+
+    # now move conf file at proper location
+    # use sudo in case it's in /etc and we are not root
+    sudo mv "$TMP_CONF_FILE" "$CONF_FILE"
 
     # final screen
     if [ $unattended -eq 0 ]; then
