@@ -99,7 +99,7 @@ function checkDeps()
     fi
 }
 
-function getUserconf()
+function get-user-conf()
 {
     # download the config file in the current directory
     echo "Downloading the config file 'elabctl.conf' in current directory..."
@@ -111,6 +111,26 @@ function getUserconf()
     echo "Edit it and move it in ~/.config or /etc."
     echo "Or leave it there and always use elabctl from this directory."
     echo "Then do 'elabctl install' again."
+}
+
+function has-disk-space()
+{
+    # check if we have enough space on disk to update the docker image
+    docker_folder=$(docker info --format '{{.DockerRootDir}}')
+    # use default if previous command didn't work
+    safe_folder=${docker_folder:-/var/lib/docker}
+    space_test=$(($(stat -f --format="%a*%S" $safe_folder)/1024**3 < 5))
+    if [[ $space_test -ne 0 ]]; then
+        echo "ERROR: There is less than 5 Gb of free space available on the disk where $safe_folder is located!"
+        df -h $safe_folder
+        echo ""
+        read -p "Remove old images and containers to free up some space? (y/N)" -n 1 -r
+        echo ""
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            docker system prune
+        fi
+        exit 1
+    fi
 }
 
 function help()
@@ -203,7 +223,7 @@ function install()
         The backups will be created at: \Z4${BACKUP_DIR}\Zn\n\n
         If you wish to change these settings, quit now and edit the file \Z4elabctl.conf\Zn" 0 0
         if [ $? -eq 1 ]; then
-            getUserconf
+            get-user-conf
             exit 0
         fi
     fi
@@ -487,6 +507,7 @@ function uninstall()
 function update()
 {
     is-installed
+    has-disk-space
     echo "Do you want to make a backup before updating? (y/N)"
     read dobackup
     if [ "$dobackup" = "y" ]; then
