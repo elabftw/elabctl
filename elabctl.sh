@@ -150,6 +150,7 @@ function help()
         info            Display the configuration variables and status
         install         Configure and install required components
         logs            Show logs of the containers
+        mysql           Open a MySQL prompt in the 'mysql' container
         php-logs        Show last 15 lines of nginx error log
         refresh         Recreate the containers if they need to be
         restart         Restart the containers
@@ -404,6 +405,12 @@ function logs()
     docker logs elabftw
 }
 
+function mysql()
+{
+    docker exec -it mysql bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE'
+}
+
+
 function php-logs()
 {
     docker exec elabftw tail -n 15 /var/log/nginx/error.log
@@ -581,7 +588,7 @@ fi
 
 # available commands
 declare -A commands
-for valid in backup bugreport help info infos install logs php-logs self-update start status stop refresh restart uninstall update upgrade usage version
+for valid in backup bugreport help info infos install logs mysql php-logs self-update start status stop refresh restart uninstall update upgrade usage version
 do
     commands[$valid]=1
 done
