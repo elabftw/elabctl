@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='1.0.1'
+declare -r ELABCTL_VERSION='1.0.2'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -63,14 +63,24 @@ function backup()
 function bugreport()
 {
     echo "Collecting information for a bug report…"
-    echo -n "elabctl version: "
-    version
-    echo -n "elabftw version: "
-    docker exec -t elabftw git tag|tail -n 1
-    echo "operating system: "
-    cat /etc/os-release
+    echo "======================================================="
+    echo -n "Elabctl version: "
+    echo $ELABCTL_VERSION
+    echo -n "Elabftw version: "
+    local -r tags=$(docker exec elabftw grep -m 1 INSTALLED_VERSION src/classes/ReleaseCheck.php)
+    local -r elabftwversion=$(echo $tags | awk '{print $5}' | cut -c 2-6)
+    echo $elabftwversion
+    echo "======================================================="
+    echo -n "Docker version: "
+    docker version | grep -m 1 Version | awk '{print $2}'
+    echo "======================================================="
+    echo "Operating system: "
     uname -a
+    cat /etc/os-release
+    echo "======================================================="
+    echo "Memory:"
     free -h
+    echo "======================================================="
 }
 
 function checkDeps()
