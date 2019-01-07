@@ -1,5 +1,21 @@
 # Changelog for elabctl
 
+## Version 1.0.2
+
+* Fix bugreport hanging on elabftw version
+* Add mysql command to spawn mysql shell in container
+* Check for disk space before update (#15)
+
+## Version 1.0.1
+
+* Download conf file to /tmp to avoid permissions issues
+* Add sudo for mkdir
+* Open port 80 for Let's Encrypt
+* Use sudo to remove data dir
+* Log file is gone
+* Don't try to install stuff, let user deal with it
+* Script can be used without being root
+
 ## Version 0.6.4
 
 * Fix install on CentOS (thanks @M4aurice) (#14)
