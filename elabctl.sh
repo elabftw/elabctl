@@ -366,15 +366,15 @@ function install()
 
     # install letsencrypt and request a certificate
     if  [ $hasdomain -eq 1 ] && [ $usele -eq 1 ]; then
-        echo 60 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing letsencrypt in ${DATA_DIR}/letsencrypt" 20 80
-        git clone --depth 1 --branch master https://github.com/letsencrypt/letsencrypt ${DATA_DIR}/letsencrypt
+        echo 60 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing letsencrypt in ${DATA_DIR}/certbot" 20 80
+        git clone --depth 1 --branch master https://github.com/certbot/certbot ${DATA_DIR}/certbot
         # because by default on DO drop it's closed
         echo 65 | dialog --backtitle "$backtitle" --title "$title" --gauge "Allowing traffic on port 443" 20 80
         ufw allow 443/tcp || true
         # also open the port 80 for the cert request
         ufw allow 80/tcp || true
         echo 70 | dialog --backtitle "$backtitle" --title "$title" --gauge "Getting the SSL certificate" 20 80
-        cd ${DATA_DIR}/letsencrypt && ./letsencrypt-auto certonly --standalone --email "$email" --agree-tos --non-interactive -d "$servername"
+        cd ${DATA_DIR}/certbot && ./certbot-auto certonly --standalone --email "$email" --agree-tos --non-interactive -d "$servername"
     fi
 
     # setup restrictive permissions
