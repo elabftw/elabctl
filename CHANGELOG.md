@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 1.0.3
+
+* Use refresh instead of restart for update command
+
 ## Version 1.0.2
 
 * Fix bugreport hanging on elabftw version
