@@ -3,6 +3,7 @@
 ## Version 1.0.3
 
 * Use refresh instead of restart for update command
+* Use certbot instead of letsencrypt-auto
 
 ## Version 1.0.2
 
