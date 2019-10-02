@@ -532,7 +532,7 @@ function update()
         echo "Backup done, now updating."
     fi
     docker-compose -f "$CONF_FILE" pull
-    restart
+    refresh
 }
 
 function upgrade()
