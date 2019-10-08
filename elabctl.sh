@@ -66,10 +66,7 @@ function bugreport()
     echo "======================================================="
     echo -n "Elabctl version: "
     echo $ELABCTL_VERSION
-    echo -n "Elabftw version: "
-    local -r tags=$(docker exec elabftw grep -m 1 INSTALLED_VERSION src/classes/ReleaseCheck.php)
-    local -r elabftwversion=$(echo $tags | awk '{print $5}' | cut -c 2-6)
-    echo $elabftwversion
+    echo -n "Elabftw version: see on sysconfig page"
     echo "======================================================="
     echo -n "Docker version: "
     docker version | grep -m 1 Version | awk '{print $2}'
