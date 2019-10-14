@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='1.0.3'
+declare -r ELABCTL_VERSION='1.0.4'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -529,7 +529,7 @@ function update()
         echo "Backup done, now updating."
     fi
     docker-compose -f "$CONF_FILE" pull
-    refresh
+    restart
 }
 
 function upgrade()

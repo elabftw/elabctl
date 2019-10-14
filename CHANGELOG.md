@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 1.0.4
+
+* Use restart instead of refresh for update command (see elabftw/elabftw#1543)
+
 ## Version 1.0.3
 
 * Use refresh instead of restart for update command
