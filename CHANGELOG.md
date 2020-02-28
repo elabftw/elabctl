@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 1.0.5
+
+* Suppress the MySQL warning. Allow silent backup for cron with > /dev/null
+
 ## Version 1.0.4
 
 * Use restart instead of refresh for update command (see elabftw/elabftw#1543)

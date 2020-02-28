@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='1.0.4'
+declare -r ELABCTL_VERSION='1.0.5'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
