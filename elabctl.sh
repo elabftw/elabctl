@@ -46,7 +46,7 @@ function backup()
     local -r dumpfile="${BACKUP_DIR}/mysql_dump-${date}.sql"
 
     # dump sql
-    docker exec mysql bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql $MYSQL_DATABASE' || echo ">> Containers must be running to do the backup!"
+    docker exec mysql bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql $MYSQL_DATABASE 2>&1 | grep -v "Warning: Using a password"' || echo ">> Containers must be running to do the backup!"
     # copy it from the container to the host
     docker cp mysql:dump.sql "$dumpfile"
     # compress it to the max
@@ -66,10 +66,7 @@ function bugreport()
     echo "======================================================="
     echo -n "Elabctl version: "
     echo $ELABCTL_VERSION
-    echo -n "Elabftw version: "
-    local -r tags=$(docker exec elabftw grep -m 1 INSTALLED_VERSION src/classes/ReleaseCheck.php)
-    local -r elabftwversion=$(echo $tags | awk '{print $5}' | cut -c 2-6)
-    echo $elabftwversion
+    echo -n "Elabftw version: see on sysconfig page"
     echo "======================================================="
     echo -n "Docker version: "
     docker version | grep -m 1 Version | awk '{print $2}'
@@ -503,7 +500,7 @@ function update()
         echo "Backup done, now updating."
     fi
     docker-compose -f "$CONF_FILE" pull
-    refresh
+    restart
 }
 
 function upgrade()

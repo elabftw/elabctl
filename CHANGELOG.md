@@ -4,6 +4,11 @@
 
 * Get a pre-processed config file from get.elabftw.net
 * Don't install certbot or try to get a certificate
+* Suppress the MySQL warning. Allow silent backup for cron with > /dev/null
+
+## Version 1.0.4
+
+* Use restart instead of refresh for update command (see elabftw/elabftw#1543)
 
 ## Version 1.0.3
 
