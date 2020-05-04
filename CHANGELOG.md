@@ -1,5 +1,10 @@
 # Changelog for elabctl
 
+## Version 2.0.0
+
+* Get a pre-processed config file from get.elabftw.net
+* Don't install certbot or try to get a certificate
+
 ## Version 1.0.3
 
 * Use refresh instead of restart for update command

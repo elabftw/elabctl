@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='1.0.3'
+declare -r ELABCTL_VERSION='2.0.0'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -200,10 +200,6 @@ function install()
     fi
 
     # init vars
-    # mysql passwords
-    declare rootpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
-    declare pass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 12 | xargs)
-
     # if you don't want any dialog
     declare unattended=${ELAB_UNATTENDED:-0}
     declare servername=${ELAB_SERVERNAME:-localhost}
@@ -328,20 +324,12 @@ function install()
         \cp $CONF_FILE ${CONF_FILE}.old
     fi
 
-    curl -sL https://raw.githubusercontent.com/elabftw/elabimg/master/src/docker-compose.yml-EXAMPLE -o "$TMP_CONF_FILE"
+    # get a config file already filled with random passwords/keys
+    curl --silent "https://get.elabftw.net/?config" -o "$TMP_CONF_FILE"
     sleep 1
 
     # elab config
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Adjusting configuration" 20 80
-    secret_key=$(curl --silent https://demo.elabftw.net/install/generateSecretKey.php)
-    if [ "${#secret_key}" -eq 0 ]; then
-        secret_key=$(curl --silent https://get.elabftw.net/?key)
-        if [ "${#secret_key}" -eq 0 ]; then
-            echo "Error getting secret key from demo.elabftw.net or get.elabftw.net! Maybe the server is down?"
-            exit 1
-        fi
-    fi
-    sed -i -e "s/SECRET_KEY=/SECRET_KEY=$secret_key/" $TMP_CONF_FILE
     sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$servername/" $TMP_CONF_FILE
     sed -i -e "s:/var/elabftw:${DATA_DIR}:" $TMP_CONF_FILE
 
@@ -357,25 +345,7 @@ function install()
         sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" $TMP_CONF_FILE
     fi
 
-    # mysql config
-    sed -i -e "s/MYSQL_ROOT_PASSWORD=secr3t/MYSQL_ROOT_PASSWORD=$rootpass/" $TMP_CONF_FILE
-    sed -i -e "s/MYSQL_PASSWORD=secr3t/MYSQL_PASSWORD=$pass/" $TMP_CONF_FILE
-    sed -i -e "s/DB_PASSWORD=secr3t/DB_PASSWORD=$pass/" $TMP_CONF_FILE
-
     sleep 1
-
-    # install letsencrypt and request a certificate
-    if  [ $hasdomain -eq 1 ] && [ $usele -eq 1 ]; then
-        echo 60 | dialog --backtitle "$backtitle" --title "$title" --gauge "Installing letsencrypt in ${DATA_DIR}/certbot" 20 80
-        git clone --depth 1 --branch master https://github.com/certbot/certbot ${DATA_DIR}/certbot
-        # because by default on DO drop it's closed
-        echo 65 | dialog --backtitle "$backtitle" --title "$title" --gauge "Allowing traffic on port 443" 20 80
-        ufw allow 443/tcp || true
-        # also open the port 80 for the cert request
-        ufw allow 80/tcp || true
-        echo 70 | dialog --backtitle "$backtitle" --title "$title" --gauge "Getting the SSL certificate" 20 80
-        cd ${DATA_DIR}/certbot && ./certbot-auto certonly --standalone --email "$email" --agree-tos --non-interactive -d "$servername"
-    fi
 
     # setup restrictive permissions
     chmod 600 "$TMP_CONF_FILE"
@@ -387,7 +357,8 @@ function install()
     # final screen
     if [ $unattended -eq 0 ]; then
         dialog --colors --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
-        \Z1====>\Zn Start the containers with: \Zb\Z4elabctl start\Zn\n\n
+        \Z1====>\Zn Finish the installation by configuring TLS certificates.\n\n
+        \Z1====>\Zn Then start the containers with: \Zb\Z4elabctl start\Zn\n\n
         \Z1====>\Zn Go to https://$servername once started!\n\n
         In the mean time, check out what to do after an install:\n
         \Z1====>\Zn https://doc.elabftw.net/postinstall.html\n\n
