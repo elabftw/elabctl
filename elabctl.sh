@@ -158,6 +158,7 @@ function help()
         install         Configure and install required components
         logs            Show logs of the containers
         mysql           Open a MySQL prompt in the 'mysql' container
+        mysql-backup    Make a MySQL dump file for backup
         php-logs        Show last 15 lines of nginx error log
         refresh         Recreate the containers if they need to be
         restart         Restart the containers
@@ -388,6 +389,29 @@ function mysql()
     docker exec -it mysql bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE'
 }
 
+# create a mysqldump and a zip archive of the uploaded files
+function mysql-backup()
+{
+    if ! ls -A "${BACKUP_DIR}" > /dev/null 2>&1; then
+        mkdir -pv "${BACKUP_DIR}"
+        if [ $? -eq 1 ]; then
+            sudo mkdir -pv ${BACKUP_DIR}
+        fi
+    fi
+
+    set -e
+
+    # get clean date
+    local -r date=$(date --iso-8601) # 2016-02-10
+    local -r dumpfile="${BACKUP_DIR}/mysql_dump-${date}.sql"
+
+    # dump sql
+    docker exec mysql bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql $MYSQL_DATABASE 2>&1 | grep -v "Warning: Using a password"' || echo ">> Containers must be running to do the backup!"
+    # copy it from the container to the host
+    docker cp mysql:dump.sql "$dumpfile"
+    # compress it to the max
+    gzip -f --best "$dumpfile"
+}
 
 function php-logs()
 {
@@ -566,7 +590,7 @@ fi
 
 # available commands
 declare -A commands
-for valid in backup bugreport help info infos install logs mysql php-logs self-update start status stop refresh restart uninstall update upgrade usage version
+for valid in backup bugreport help info infos install logs mysql mysql-backup php-logs self-update start status stop refresh restart uninstall update upgrade usage version
 do
     commands[$valid]=1
 done
