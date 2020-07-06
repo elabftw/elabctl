@@ -126,10 +126,10 @@ function has-disk-space()
     docker_folder=$(docker info --format '{{.DockerRootDir}}')
     # use default if previous command didn't work
     safe_folder=${docker_folder:-/var/lib/docker}
-    space_test=$(($(stat -f --format="%a*%S" $safe_folder)/1024**3 < 5))
+    space_test=$(($(stat -f --format="%a*%S" "$safe_folder")/1024**3 < 5))
     if [[ $space_test -ne 0 ]]; then
         echo "ERROR: There is less than 5 Gb of free space available on the disk where $safe_folder is located!"
-        df -h $safe_folder
+        df -h "$safe_folder"
         echo ""
         read -p "Remove old images and containers to free up some space? (y/N)" -n 1 -r
         echo ""
@@ -202,10 +202,7 @@ function install()
     declare unattended=${ELAB_UNATTENDED:-0}
     declare servername=${ELAB_SERVERNAME:-localhost}
     declare hasdomain=${ELAB_HASDOMAIN:-0}
-    declare email=${ELAB_EMAIL:-elabtest@yopmail.com}
-    declare usele=${ELAB_USELE:-0}
     declare usehttps=${ELAB_USEHTTPS:-1}
-    declare useselfsigned=${ELAB_USESELFSIGNED:-0}
 
     # exit on error
     set -e
@@ -268,34 +265,20 @@ function install()
             ## END DOMAIN NAME OR IP BLOCK
 
             # ASK IF WE WANT HTTPS AT ALL FIRST
-            dialog --backtitle "$backtitle" --title "$title" --yes-label "Use HTTPS" --no-label "Disable HTTPS" --yesno "\nDo you want to run the HTTPS enabled container or a normal HTTP server? Note: disabling HTTPS means you will use another webserver as a proxy for TLS connections.\n\nChoose 'Disable HTTPS' if you already have a webserver capable of terminating TLS requests running (Apache or nginx).\nChoose 'Use HTTPS' if unsure.\n" 0 0
+            dialog --backtitle "$backtitle" --title "$title" --yes-label "Use HTTPS" --no-label "Disable HTTPS" --yesno "\nDo you want to run the HTTPS enabled container or a normal HTTP server? Note: disabling HTTPS means you will use another webserver as a proxy for TLS connections.\n\nChoose 'Disable HTTPS' if you already have a webserver capable of terminating TLS requests running (Apache/Nginx/HAProxy).\nChoose 'Use HTTPS' if unsure.\n" 0 0
             if [ $? -eq 1 ]; then
                 # use HTTP
                 usehttps=0
             else
-                # use HTTPS
-                # https + no domain = self signed
-                if [ $hasdomain -eq 0 ]; then
-                    useselfsigned=1
-                else
+                if [ $hasdomain -eq 1 ]; then
                     # ASK IF SELF-SIGNED OR PROPER CERT
                     dialog --backtitle "$backtitle" --title "$title" --yes-label "Use correct certificate" --no-label "Use self-signed" --yesno "\nDo you want to use a proper TLS certificate (coming from Let's Encrypt or provided by you) or use a self-signed certificate? The self-signed certificate will be automatically generated for you, but browsers will display a warning when connecting.\n\nChoose 'Use self-signed' if you do not have a domain name.\n" 0 0
-                    if [ $? -eq 1 ]; then
-                        useselfsigned=1
-                    else
+                    if [ $? -eq 0 ]; then
                         # want correct cert
-                        # ASK FOR LETSENCRYPT
-                        dialog --colors --backtitle "$backtitle" --title "$title" --yes-label "Use Let's Encrypt" --no-label "Use my own certificate" --yesno "\nDo you want to request a free certificate from Let's Encrypt or use one you already have?\n\n\ZbIMPORTANT:\Zn you can only use Let's Encrypt if you have a domain name pointing to this server and it is accessible from internet (not behind a corporate network).\nChoose 'Use my own certificate' if you don't want elabctl to install the Let's Encrypt client to request a new certificate." 0 0
-                        if [ $? -eq 0 ]; then
-                            usele=1
-                            hasdomain=1
-                            email=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nWhat is your email?\n
-        It is sent to Let's Encrypt only so they can remind you about certificate expiration.\n
-        Enter your email address:\n" 0 0 --output-fd 1)
-                        else
-                            # show warning about need of edit config file for own certs
-                            dialog --colors --backtitle "$backtitle" --title "$title" --msgbox "\nMake sure to \Zb\Z4edit the configuration file ${CONF_FILE}\Zn to point to your certificates before starting the containers!\n" 0 0
-                        fi
+                        dialog --backtitle "$backtitle" --title "$title" --msgbox "\nSee the documentation on how to configure your TLS certificate before starting the containers.\n" 0 0
+                    else
+                        # use self signed
+                        dialog --backtitle "$backtitle" --title "$title" --msgbox "\nA self-signed certificate will be generated upon container start. But really you should try and use a domain name ;)\n" 0 0
                     fi
                 fi
             fi
@@ -353,7 +336,7 @@ function install()
     sudo mv "$TMP_CONF_FILE" "$CONF_FILE"
 
     # final screen
-    if [ $unattended -eq 0 ]; then
+    if [ "$unattended" -eq 0 ]; then
         dialog --colors --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
         \Z1====>\Zn Finish the installation by configuring TLS certificates.\n\n
         \Z1====>\Zn Then start the containers with: \Zb\Z4elabctl start\Zn\n\n
@@ -432,7 +415,7 @@ function restart()
 
 function self-update()
 {
-    me=$(which "$0")
+    me=$(command -v "$0")
     echo "Downloading new version to /tmp/elabctl"
     curl -sL https://raw.githubusercontent.com/elabftw/elabctl/master/elabctl.sh -o /tmp/elabctl
     chmod -v +x /tmp/elabctl
@@ -518,7 +501,7 @@ function update()
     is-installed
     has-disk-space
     echo "Do you want to make a backup before updating? (y/N)"
-    read dobackup
+    read -r dobackup
     if [ "$dobackup" = "y" ]; then
         backup
         echo "Backup done, now updating."
@@ -570,8 +553,8 @@ if [ -f /etc/elabctl.conf ]; then
 fi
 
 # elabctl.conf in ~/.config
-if [ -f ${HOME}/.config/elabctl.conf ]; then
-    source ${HOME}/.config/elabctl.conf
+if [ -f "${HOME}/.config/elabctl.conf" ]; then
+    source "${HOME}/.config/elabctl.conf"
     ELABCTL_CONF_FILE="${HOME}/.config/elabctl.conf"
 fi
 
@@ -599,8 +582,8 @@ if [[ ${commands[$1]} ]]; then
     # exit if variable isn't set
     set -u
     ascii
-    echo "Using elabctl configuration file: "$ELABCTL_CONF_FILE""
-    echo "Using elabftw configuration file: "$CONF_FILE""
+    echo "Using elabctl configuration file: $ELABCTL_CONF_FILE"
+    echo "Using elabftw configuration file: $CONF_FILE"
     echo "---------------------------------------------"
     $1
 else
