@@ -5,6 +5,7 @@
 * Get a pre-processed config file from get.elabftw.net
 * Don't install certbot or try to get a certificate
 * Suppress the MySQL warning. Allow silent backup for cron with > /dev/null
+* Add mysql-backup command to just make a dump of the database, don't zip the files
 
 ## Version 1.0.4
 
