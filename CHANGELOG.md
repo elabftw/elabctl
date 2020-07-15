@@ -1,5 +1,8 @@
 # Changelog for elabctl
 
+## Version 2.0.1
+* Add --no-tablespaces argument to mysqldump to avoid PROCESS privilege error
+
 ## Version 2.0.0
 
 * Get a pre-processed config file from get.elabftw.net
