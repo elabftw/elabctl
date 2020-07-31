@@ -1,5 +1,8 @@
 # Changelog for elabctl
 
+## Version 2.1.1
+* Fix wrongly committed local config
+
 ## Version 2.1.0
 * Allow specifying the name of the containers in config file
 
