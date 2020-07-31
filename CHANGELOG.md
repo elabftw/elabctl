@@ -1,5 +1,8 @@
 # Changelog for elabctl
 
+## Version 2.1.0
+* Allow specifying the name of the containers in config file
+
 ## Version 2.0.1
 * Add --no-tablespaces argument to mysqldump to avoid PROCESS privilege error
 

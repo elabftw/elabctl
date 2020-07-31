@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='2.0.1'
+declare -r ELABCTL_VERSION='2.1.0'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -176,6 +176,8 @@ function info()
 {
     echo "Backup directory: ${BACKUP_DIR}"
     echo "Data directory: ${DATA_DIR}"
+    echo "Web container name: ${ELAB_WEB_CONTAINER_NAME}"
+    echo "MySQL container name: ${ELAB_MYSQL_CONTAINER_NAME}"
     echo ""
     echo "Status:"
     status
@@ -363,13 +365,13 @@ function is-installed()
 
 function logs()
 {
-    docker logs mysql
-    docker logs elabftw
+    docker logs ${ELAB_MYSQL_CONTAINER_NAME}
+    docker logs ${ELAB_WEB_CONTAINER_NAME}
 }
 
 function mysql()
 {
-    docker exec -it mysql bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE'
+    docker exec -it ${ELAB_MYSQL_CONTAINER_NAME} bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE'
 }
 
 # create a mysqldump and a zip archive of the uploaded files
@@ -389,16 +391,16 @@ function mysql-backup()
     local -r dumpfile="${BACKUP_DIR}/mysql_dump-${date}.sql"
 
     # dump sql
-    docker exec mysql bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql --no-tablespaces $MYSQL_DATABASE 2>&1 | grep -v "Warning: Using a password"' || echo ">> Containers must be running to do the backup!"
+    docker exec ${ELAB_MYSQL_CONTAINER_NAME} bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql --no-tablespaces $MYSQL_DATABASE 2>&1 | grep -v "Warning: Using a password"' || echo ">> Containers must be running to do the backup!"
     # copy it from the container to the host
-    docker cp mysql:dump.sql "$dumpfile"
+    docker cp ${ELAB_MYSQL_CONTAINER_NAME}:dump.sql "$dumpfile"
     # compress it to the max
     gzip -f --best "$dumpfile"
 }
 
 function php-logs()
 {
-    docker exec elabftw tail -n 15 /var/log/nginx/error.log
+    docker exec ${ELAB_WEB_CONTAINER_NAME} tail -n 15 /var/log/nginx/error.log
 }
 
 function refresh()
@@ -545,6 +547,11 @@ case "$1" in
     exit 0
     ;;
 esac
+
+# default settings that could be overriden by config
+
+declare ELAB_WEB_CONTAINER_NAME='elabftw'
+declare ELAB_MYSQL_CONTAINER_NAME='mysql'
 
 # Now we load the configuration file for custom directories set by user
 if [ -f /etc/elabctl.conf ]; then
