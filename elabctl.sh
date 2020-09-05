@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='2.1.1'
+declare -r ELABCTL_VERSION='2.2.0'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -12,6 +12,11 @@ declare DATA_DIR='/var/elabftw'
 
 # default conf file is no conf file
 declare ELABCTL_CONF_FILE="using default values (no config file found)"
+
+function access-logs()
+{
+    docker logs "${ELAB_WEB_CONTAINER_NAME}" 2>/dev/null
+}
 
 # display ascii logo
 function ascii()
@@ -106,6 +111,11 @@ function checkDeps()
     fi
 }
 
+function error-logs()
+{
+    docker logs "${ELAB_WEB_CONTAINER_NAME}" 1>/dev/null
+}
+
 function get-user-conf()
 {
     # download the config file in the current directory
@@ -151,15 +161,16 @@ function help()
 
     Commands:
 
+        access-logs     Show last lines of webserver access log
         backup          Backup your installation
         bugreport       Gather information about the system for a bug report
+        error-logs      Show last lines of webserver error log
         help            Show this text
         info            Display the configuration variables and status
         install         Configure and install required components
         logs            Show logs of the containers
         mysql           Open a MySQL prompt in the 'mysql' container
         mysql-backup    Make a MySQL dump file for backup
-        php-logs        Show last 15 lines of nginx error log
         refresh         Recreate the containers if they need to be
         restart         Restart the containers
         self-update     Update the elabctl script
@@ -391,16 +402,11 @@ function mysql-backup()
     local -r dumpfile="${BACKUP_DIR}/mysql_dump-${date}.sql"
 
     # dump sql
-    docker exec ${ELAB_MYSQL_CONTAINER_NAME} bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql --no-tablespaces $MYSQL_DATABASE 2>&1 | grep -v "Warning: Using a password"' || echo ">> Containers must be running to do the backup!"
+    docker exec "${ELAB_MYSQL_CONTAINER_NAME}" bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql --no-tablespaces $MYSQL_DATABASE 2>&1 | grep -v "Warning: Using a password"' || echo ">> Containers must be running to do the backup!"
     # copy it from the container to the host
-    docker cp ${ELAB_MYSQL_CONTAINER_NAME}:dump.sql "$dumpfile"
+    docker cp "${ELAB_MYSQL_CONTAINER_NAME}:dump.sql" "$dumpfile"
     # compress it to the max
     gzip -f --best "$dumpfile"
-}
-
-function php-logs()
-{
-    docker exec ${ELAB_WEB_CONTAINER_NAME} tail -n 15 /var/log/nginx/error.log
 }
 
 function refresh()
@@ -580,7 +586,7 @@ fi
 
 # available commands
 declare -A commands
-for valid in backup bugreport help info infos install logs mysql mysql-backup php-logs self-update start status stop refresh restart uninstall update upgrade usage version
+for valid in access-logs backup bugreport error-logs help info infos install logs mysql mysql-backup self-update start status stop refresh restart uninstall update upgrade usage version
 do
     commands[$valid]=1
 done

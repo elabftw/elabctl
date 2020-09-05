@@ -1,5 +1,8 @@
 # Changelog for elabctl
 
+## Version 2.2.0
+* Replace php-logs with access-logs and error-logs using docker logs command
+
 ## Version 2.1.1
 * Fix wrongly committed local config
 
