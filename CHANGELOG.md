@@ -1,5 +1,8 @@
 # Changelog for elabctl
 
+## Version 2.2.1
+* Add link to latest version changelog after update
+
 ## Version 2.2.0
 * Replace php-logs with access-logs and error-logs using docker logs command
 
