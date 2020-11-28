@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='2.2.0'
+declare -r ELABCTL_VERSION='2.2.1'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -414,7 +414,6 @@ function refresh()
     start
 }
 
-
 function restart()
 {
     stop
@@ -516,6 +515,9 @@ function update()
     fi
     docker-compose -f "$CONF_FILE" pull
     restart
+    echo "Your are now running the latest eLabFTW version."
+    echo "Make sure to read the CHANGELOG!"
+    echo "=> https://github.com/elabftw/elabftw/releases/latest"
 }
 
 function upgrade()
@@ -531,7 +533,7 @@ function usage()
 function version()
 {
     echo "elabctl © 2017 Nicolas CARPi - https://www.elabftw.net"
-    echo "Version: $ELABCTL_VERSION"
+    echo "elabctl version: $ELABCTL_VERSION"
 }
 
 # SCRIPT BEGIN
