@@ -1,5 +1,8 @@
 # Changelog for elabctl
 
+## Version 2.2.2
+* Use correct mysql container name for backup
+
 ## Version 2.2.1
 * Add link to latest version changelog after update
 
