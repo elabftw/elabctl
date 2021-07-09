@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='2.2.2'
+declare -r ELABCTL_VERSION='2.2.3'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -307,8 +307,8 @@ function install()
     sudo chmod -Rv 700 ${DATA_DIR}
     echo "Executing: sudo chown -v 999:999 ${DATA_DIR}/mysql"
     sudo chown -v 999:999 ${DATA_DIR}/mysql
-    echo "Executing: sudo chown -v 100:101 ${DATA_DIR}/web"
-    sudo chown -v 100:101 ${DATA_DIR}/web
+    echo "Executing: sudo chown -v 101:101 ${DATA_DIR}/web"
+    sudo chown -v 101:101 ${DATA_DIR}/web
     sleep 2
 
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Grabbing the docker-compose configuration file" 20 80

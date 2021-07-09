@@ -1,5 +1,8 @@
 # Changelog for elabctl
 
+## Version 2.2.3
+* Fix permissions for uploaded files folder chown command
+
 ## Version 2.2.2
 * Use correct mysql container name for backup
 
