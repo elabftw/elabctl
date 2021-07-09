@@ -51,9 +51,9 @@ function backup()
     local -r dumpfile="${BACKUP_DIR}/mysql_dump-${date}.sql"
 
     # dump sql
-    docker exec ${ELAB_MYSQL_CONTAINER_NAME} bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql --no-tablespaces $MYSQL_DATABASE 2>&1 | grep -v "Warning: Using a password"' || echo ">> Containers must be running to do the backup!"
+    docker exec "${ELAB_MYSQL_CONTAINER_NAME}" bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql --no-tablespaces $MYSQL_DATABASE 2>&1 | grep -v "Warning: Using a password"' || echo ">> Containers must be running to do the backup!"
     # copy it from the container to the host
-    docker cp ${ELAB_MYSQL_CONTAINER_NAME}:dump.sql "$dumpfile"
+    docker cp "${ELAB_MYSQL_CONTAINER_NAME}":dump.sql "$dumpfile"
     # compress it to the max
     gzip -f --best "$dumpfile"
     # make a zip of the uploads folder
@@ -367,13 +367,13 @@ function is-installed()
 
 function logs()
 {
-    docker logs ${ELAB_MYSQL_CONTAINER_NAME}
-    docker logs ${ELAB_WEB_CONTAINER_NAME}
+    docker logs "${ELAB_MYSQL_CONTAINER_NAME}"
+    docker logs "${ELAB_WEB_CONTAINER_NAME}"
 }
 
 function mysql()
 {
-    docker exec -it ${ELAB_MYSQL_CONTAINER_NAME} bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE'
+    docker exec -it "${ELAB_MYSQL_CONTAINER_NAME}" bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE'
 }
 
 # create a mysqldump and a zip archive of the uploaded files
