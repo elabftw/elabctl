@@ -89,22 +89,13 @@ function checkDeps()
 {
     need_to_quit=0
 
-    if ! hash dialog 2>/dev/null; then
-        echo "Error: dialog not installed. Please install the program 'dialog'"
-        need_to_quit=1
-    fi
-    if ! hash docker-compose 2>/dev/null; then
-        echo "Error: docker-compose not installed. Please install the program 'docker-compose'"
-        need_to_quit=1
-    fi
-    if ! hash git 2>/dev/null; then
-        echo "Error: git not installed. Please install the program 'git'"
-        need_to_quit=1
-    fi
-    if ! hash zip 2>/dev/null; then
-        echo "Error: zip not installed. Please install the program 'zip'"
-        need_to_quit=1
-    fi
+    for bin in dialog docker-compose git zip
+    do
+        if ! hash "$bin" 2>/dev/null; then
+            echo "Error: $bin not found in the \$PATH. Please install the program '$bin' or fix your \$PATH."
+            need_to_quit=1
+        fi
+    done
 
     if [ $need_to_quit -eq 1 ]; then
         exit 1
