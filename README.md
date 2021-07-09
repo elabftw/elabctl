@@ -1,17 +1,28 @@
 # elabctl.sh
 
-This script is used to manage an eLabFTW installation.
-See the main [documentation](https://elabftw.readthedocs.io/).
+This script is used to manage an eLabFTW instance.
+
+#### See the main [documentation](https://doc.elabftw.net).
 
 ## Install
 
 As root:
 
+With `curl`:
+
 ~~~bash
-wget -qO- https://get.elabftw.net > /usr/bin/elabctl && chmod +x /usr/bin/elabctl
+curl -sL https://get.elabftw.net -o /usr/local/bin/elabctl && chmod +x /usr/local/bin/elabctl
+~~~
+
+Or with `wget`:
+
+~~~bash
+wget -qO- https://get.elabftw.net > /usr/local/bin/elabctl && chmod +x /usr/local/bin/elabctl
 ~~~
 
 ## Use
+
+Make sure that `/usr/local/bin` is in your `$PATH`.
 
 ~~~bash
 elabctl help
