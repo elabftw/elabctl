@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 2.2.4
+* Fix ENABLE_LETSENCRYPT being incorrectly set to true for self signed certs (#20)
+* Drop "no domain name" support
+
 ## Version 2.2.3
 * Fix permissions for uploaded files folder chown command
 
