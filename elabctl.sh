@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='2.2.3'
+declare -r ELABCTL_VERSION='2.2.4'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -89,7 +89,7 @@ function checkDeps()
 {
     need_to_quit=0
 
-    for bin in dialog docker-compose git zip
+    for bin in dialog docker-compose git zip curl sudo
     do
         if ! hash "$bin" 2>/dev/null; then
             echo "Error: $bin not found in the \$PATH. Please install the program '$bin' or fix your \$PATH."
@@ -207,6 +207,7 @@ function install()
     declare servername=${ELAB_SERVERNAME:-localhost}
     declare hasdomain=${ELAB_HASDOMAIN:-0}
     declare usehttps=${ELAB_USEHTTPS:-1}
+    declare useselfsigned=${ELAB_USESELFSIGNED:-0}
 
     # exit on error
     set -e
@@ -263,8 +264,9 @@ function install()
                 # ask for domain name
                 servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter your domain name below:\nExample: elabftw.example.org\n" 0 0 --output-fd 1)
             else
-                # ask for ip
-                servername=$(dialog --backtitle "$backtitle" --title "$title" --inputbox "\nPlease enter your IP address below:\nExample: 88.120.132.154\n" 0 0 --output-fd 1)
+                # no domain is not supported, exit
+                dialog --backtitle "$backtitle" --title "$title" --msgbox "\nInstallation without a proper domain name is not supported.\n" 0 0
+                exit 1
             fi
             ## END DOMAIN NAME OR IP BLOCK
 
@@ -282,6 +284,7 @@ function install()
                         dialog --backtitle "$backtitle" --title "$title" --msgbox "\nSee the documentation on how to configure your TLS certificate before starting the containers.\n" 0 0
                     else
                         # use self signed
+                        useselfsigned=1
                         dialog --backtitle "$backtitle" --title "$title" --msgbox "\nA self-signed certificate will be generated upon container start. But really you should try and use a domain name ;)\n" 0 0
                     fi
                 fi
@@ -324,7 +327,7 @@ function install()
     fi
 
     # enable letsencrypt
-    if [ $hasdomain -eq 1 ]; then
+    if [ $hasdomain -eq 1 ] && [ $useselfsigned -eq 0 ]; then
         # even if we don't use Let's Encrypt, for using TLS certs we need this to be true, and volume mounted
         sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" $TMP_CONF_FILE
         sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" $TMP_CONF_FILE
