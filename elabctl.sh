@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='2.2.4'
+declare -r ELABCTL_VERSION='2.3.0'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -426,19 +426,19 @@ function self-update()
 function start()
 {
     is-installed
-    docker-compose -f "$CONF_FILE" up -d
+    docker compose -f "$CONF_FILE" up -d
 }
 
 function status()
 {
     is-installed
-    docker-compose -f "$CONF_FILE" ps
+    docker compose -f "$CONF_FILE" ps
 }
 
 function stop()
 {
     is-installed
-    docker-compose -f "$CONF_FILE" down
+    docker compose -f "$CONF_FILE" down
 }
 
 function uninstall()
@@ -507,7 +507,7 @@ function update()
         backup
         echo "Backup done, now updating."
     fi
-    docker-compose -f "$CONF_FILE" pull
+    docker compose -f "$CONF_FILE" pull
     restart
     echo "Your are now running the latest eLabFTW version."
     echo "Make sure to read the CHANGELOG!"
