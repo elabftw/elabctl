@@ -13,13 +13,13 @@ declare DATA_DIR='/var/elabftw'
 # default conf file is no conf file
 declare ELABCTL_CONF_FILE="using default values (no config file found)"
 
-function access-logs()
+function access-logs
 {
     docker logs "${ELAB_WEB_CONTAINER_NAME}" 2>/dev/null
 }
 
 # display ascii logo
-function ascii()
+function ascii
 {
     echo ""
     echo "      _          _     _____ _______        __"
@@ -32,7 +32,7 @@ function ascii()
 }
 
 # create a mysqldump and a zip archive of the uploaded files
-function backup()
+function backup
 {
     echo "Using backup directory $BACKUP_DIR"
 
@@ -65,7 +65,7 @@ function backup()
 }
 
 # generate info for reporting a bug
-function bugreport()
+function bugreport
 {
     echo "Collecting information for a bug report…"
     echo "======================================================="
@@ -85,7 +85,7 @@ function bugreport()
     echo "======================================================="
 }
 
-function checkDeps()
+function checkDeps
 {
     need_to_quit=0
 
@@ -102,12 +102,12 @@ function checkDeps()
     fi
 }
 
-function error-logs()
+function error-logs
 {
     docker logs "${ELAB_WEB_CONTAINER_NAME}" 1>/dev/null
 }
 
-function get-user-conf()
+function get-user-conf
 {
     # download the config file in the current directory
     echo "Downloading the config file 'elabctl.conf' in current directory..."
@@ -121,7 +121,7 @@ function get-user-conf()
     echo "Then do 'elabctl install' again."
 }
 
-function has-disk-space()
+function has-disk-space
 {
     # check if we have enough space on disk to update the docker image
     docker_folder=$(docker info --format '{{.DockerRootDir}}')
@@ -141,7 +141,7 @@ function has-disk-space()
     fi
 }
 
-function help()
+function help
 {
     version
     echo "
@@ -174,7 +174,7 @@ function help()
     "
 }
 
-function info()
+function info
 {
     echo "Backup directory: ${BACKUP_DIR}"
     echo "Data directory: ${DATA_DIR}"
@@ -185,13 +185,8 @@ function info()
     status
 }
 
-function infos()
-{
-    info
-}
-
 # install pip and docker-compose, get elabftw.yml and configure it with sed
-function install()
+function install
 {
     checkDeps
 
@@ -357,7 +352,7 @@ function install()
 
 }
 
-function is-installed()
+function is-installed
 {
     if [ ! -f $CONF_FILE ]; then
         echo "###### ERROR ##########################################################"
@@ -368,19 +363,19 @@ function is-installed()
     fi
 }
 
-function logs()
+function logs
 {
     docker logs "${ELAB_MYSQL_CONTAINER_NAME}"
     docker logs "${ELAB_WEB_CONTAINER_NAME}"
 }
 
-function mysql()
+function mysql
 {
     docker exec -it "${ELAB_MYSQL_CONTAINER_NAME}" bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE'
 }
 
 # create a mysqldump and a zip archive of the uploaded files
-function mysql-backup()
+function mysql-backup
 {
     if ! ls -A "${BACKUP_DIR}" > /dev/null 2>&1; then
         mkdir -pv "${BACKUP_DIR}"
@@ -403,18 +398,18 @@ function mysql-backup()
     gzip -f --best "$dumpfile"
 }
 
-function refresh()
+function refresh
 {
     start
 }
 
-function restart()
+function restart
 {
     stop
     start
 }
 
-function self-update()
+function self-update
 {
     me=$(command -v "$0")
     echo "Downloading new version to /tmp/elabctl"
@@ -423,25 +418,25 @@ function self-update()
     mv -v /tmp/elabctl "$me"
 }
 
-function start()
+function start
 {
     is-installed
     docker compose -f "$CONF_FILE" up -d
 }
 
-function status()
+function status
 {
     is-installed
     docker compose -f "$CONF_FILE" ps
 }
 
-function stop()
+function stop
 {
     is-installed
     docker compose -f "$CONF_FILE" down
 }
 
-function uninstall()
+function uninstall
 {
     stop
 
@@ -497,7 +492,7 @@ function uninstall()
     echo "[✓] Everything has been obliterated. Have a nice day :)"
 }
 
-function update()
+function update
 {
     is-installed
     has-disk-space
@@ -514,17 +509,17 @@ function update()
     echo "=> https://github.com/elabftw/elabftw/releases/latest"
 }
 
-function upgrade()
+function upgrade
 {
     update
 }
 
-function usage()
+function usage
 {
     help
 }
 
-function version()
+function version
 {
     echo "elabctl © 2017 Nicolas CARPi - https://www.elabftw.net"
     echo "elabctl version: $ELABCTL_VERSION"
