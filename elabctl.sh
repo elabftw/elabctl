@@ -352,6 +352,29 @@ function install
 
 }
 
+# check if the latest released version is a beta version and display a warning with a choice to continue or stop
+function is-beta
+{
+    # make sure jq is available: it is not added to the required dependencies
+    if ! command -v jq &> /dev/null
+    then
+        echo "Notice: 'jq' command not found, skipping release is beta check."
+        return
+    fi
+    latest_release=$(curl -s https://api.github.com/repos/elabftw/elabimg/releases/latest | jq -r ".tag_name")
+    echo "Found latest release: $latest_release"
+    case "$latest_release" in
+      *BETA*)
+          echo "Warning: the latest version appears to be a BETA version, are you sure you wish to update? (y/N)"
+          read -r okbeta
+          if [ ! "$okbeta" = "y" ]; then
+              echo "Aborting update!"
+              exit 1
+          fi
+      ;;
+    esac
+}
+
 function is-installed
 {
     if [ ! -f $CONF_FILE ]; then
@@ -502,6 +525,7 @@ function update
         backup
         echo "Backup done, now updating."
     fi
+    is-beta
     docker compose -f "$CONF_FILE" pull
     restart
     echo "Your are now running the latest eLabFTW version."

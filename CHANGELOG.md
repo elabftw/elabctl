@@ -3,6 +3,7 @@
 ## Version 2.3.0
 
 * Use `docker compose` instead of `docker-compose` command
+* Add a warning with a choice to continue update if the latest version is a beta version
 
 ## Version 2.2.4
 * Fix ENABLE_LETSENCRYPT being incorrectly set to true for self signed certs (#20)
