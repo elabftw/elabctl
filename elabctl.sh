@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='2.3.0'
+declare -r ELABCTL_VERSION='2.3.1'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -12,6 +12,10 @@ declare DATA_DIR='/var/elabftw'
 
 # default conf file is no conf file
 declare ELABCTL_CONF_FILE="using default values (no config file found)"
+
+# by default use the new compose command
+# will be overridden by select-dc-cmd()
+declare DC="docker compose"
 
 function access-logs
 {
@@ -432,6 +436,16 @@ function restart
     start
 }
 
+# determine if we use "docker compose" or "docker-compose"
+function select-dc-cmd
+{
+    # get the major version number
+    docker_version=$(docker version|grep -m 1 Version|awk '{print $2}'|awk -F . '{print $1}')
+    if [ "$docker_version" -lt 20 ]; then
+        export DC="docker-compose"
+    fi
+}
+
 function self-update
 {
     me=$(command -v "$0")
@@ -444,19 +458,19 @@ function self-update
 function start
 {
     is-installed
-    docker compose -f "$CONF_FILE" up -d
+    eval "$DC" -f "$CONF_FILE" up -d
 }
 
 function status
 {
     is-installed
-    docker compose -f "$CONF_FILE" ps
+    eval "$DC" -f "$CONF_FILE" ps
 }
 
 function stop
 {
     is-installed
-    docker compose -f "$CONF_FILE" down
+    eval "$DC" -f "$CONF_FILE" down
 }
 
 function uninstall
@@ -526,7 +540,7 @@ function update
         echo "Backup done, now updating."
     fi
     is-beta
-    docker compose -f "$CONF_FILE" pull
+    eval "$DC" -f "$CONF_FILE" pull
     restart
     echo "Your are now running the latest eLabFTW version."
     echo "Make sure to read the CHANGELOG!"
@@ -613,6 +627,7 @@ if [[ ${commands[$1]} ]]; then
     echo "Using elabctl configuration file: $ELABCTL_CONF_FILE"
     echo "Using elabftw configuration file: $CONF_FILE"
     echo "---------------------------------------------"
+    select-dc-cmd
     $1
 else
     help
