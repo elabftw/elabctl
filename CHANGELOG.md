@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 2.3.2
+
+* Use `docker compose` for Docker version > 20.x and `docker-compose` otherwise.
+
 ## Version 2.3.1
 
 * Use `docker compose` for Docker version > 19.x and `docker-compose` otherwise. (#22)

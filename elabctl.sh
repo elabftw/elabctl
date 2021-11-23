@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='2.3.1'
+declare -r ELABCTL_VERSION='2.3.2'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -441,7 +441,7 @@ function select-dc-cmd
 {
     # get the major version number
     docker_version=$(docker version|grep -m 1 Version|awk '{print $2}'|awk -F . '{print $1}')
-    if [ "$docker_version" -lt 20 ]; then
+    if [ "$docker_version" -lt 21 ]; then
         export DC="docker-compose"
     fi
 }
