@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 2.3.3
+
+* Add `--column-statistics=0` to mysqldump command.
+
 ## Version 2.3.2
 
 * Use `docker compose` for Docker version > 20.x and `docker-compose` otherwise.
