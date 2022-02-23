@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 2.3.4
+
+* Remove `--column-statistics=0` to mysqldump command. See https://github.com/elabftw/elabctl/issues/23
+
 ## Version 2.3.3
 
 * Add `--column-statistics=0` to mysqldump command.
