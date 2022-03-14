@@ -40,7 +40,7 @@ function backup
 {
     echo "Using backup directory $BACKUP_DIR"
 
-    if ! ls -A "${BACKUP_DIR}" > /dev/null 2>&1; then
+    if [ ! -d "${BACKUP_DIR}" ]; then
         mkdir -pv "${BACKUP_DIR}"
         if [ $? -eq 1 ]; then
             sudo mkdir -pv ${BACKUP_DIR}
@@ -404,7 +404,7 @@ function mysql
 # create a mysqldump and a zip archive of the uploaded files
 function mysql-backup
 {
-    if ! ls -A "${BACKUP_DIR}" > /dev/null 2>&1; then
+    if [ ! -d "${BACKUP_DIR}" ]; then
         mkdir -pv "${BACKUP_DIR}"
         if [ $? -eq 1 ]; then
             sudo mkdir -pv ${BACKUP_DIR}
