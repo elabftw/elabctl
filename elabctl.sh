@@ -69,7 +69,7 @@ function backup
     # Add a config file with current version.
     # Replace elabftw.yml with this if the SQL schema may have changed
     # between backup and restore time.
-    VERSION=`docker exec elabftw bash -c 'echo $ELABFTW_VERSION'`
+    VERSION=`docker exec ${ELAB_WEB_CONTAINER_NAME} bash -c 'echo $ELABFTW_VERSION'`
     sed s/'image: elabftw\/elabimg:.*$'/"image: elabftw\/elabimg:$VERSION"/ "$CONF_FILE" > "$CONF_FILE.versioned"
     zip -rq "$zipfile" "$CONF_FILE.versioned"
     
