@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='2.3.3'
+declare -r ELABCTL_VERSION='2.3.4'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -65,6 +65,13 @@ function backup
     # add the config file
     zip -rq "$zipfile" $CONF_FILE
 
+    # Add a config file with current version.
+    # Replace elabftw.yml with this if the SQL schema may have changed
+    # between backup and restore time.
+    VERSION=`docker exec ${ELAB_WEB_CONTAINER_NAME} bash -c 'echo $ELABFTW_VERSION'`
+    sed s/'image: elabftw\/elabimg:.*$'/"image: elabftw\/elabimg:$VERSION"/ "$CONF_FILE" > "$CONF_FILE.versioned"
+    zip -rq "$zipfile" "$CONF_FILE.versioned"
+    
     echo "Done. Copy ${BACKUP_DIR} over to another computer."
 }
 

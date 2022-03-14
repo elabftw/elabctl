@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 2.3.4
+
+* Add an elabftw.yml.versioned file. If a user wants to restore from backup to the same eLabFTW version, they can use this. It does not replace elabftw.yml, since this might break the expected behaviour of future runs of `elabctl update`.
+
 ## Version 2.3.3
 
 * Add `--column-statistics=0` to mysqldump command.
