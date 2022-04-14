@@ -343,7 +343,7 @@ function install
         sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" $TMP_CONF_FILE
     fi
 
-    sed -i -e "s/SITE_URL=/SITE_URL=$scheme$servername/" $TMP_CONF_FILE
+    sed -i -e "s#SITE_URL=#SITE_URL=$scheme$servername#" $TMP_CONF_FILE
 
     sleep 1
 
