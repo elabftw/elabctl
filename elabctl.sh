@@ -162,6 +162,7 @@ function help
         error-logs      Show last lines of webserver error log
         help            Show this text
         info            Display the configuration variables and status
+        initialize      Initialize the MySQL database for eLabFTW
         install         Configure and install required components
         logs            Show logs of the containers
         mysql           Open a MySQL prompt in the 'mysql' container
@@ -187,6 +188,12 @@ function info
     echo ""
     echo "Status:"
     status
+}
+
+function initialize
+{
+    is-installed
+    docker exec -it "${ELAB_WEB_CONTAINER_NAME}" bin/install start
 }
 
 # install pip and docker-compose, get elabftw.yml and configure it with sed
@@ -352,6 +359,7 @@ function install
         dialog --colors --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
         \Z1====>\Zn Finish the installation by configuring TLS certificates.\n\n
         \Z1====>\Zn Then start the containers with: \Zb\Z4elabctl start\Zn\n\n
+        \Z1====>\Zn Then import the database structure with: \Zb\Z4elabctl initialize\Zn\n\n
         \Z1====>\Zn Go to https://$servername once started!\n\n
         In the mean time, check out what to do after an install:\n
         \Z1====>\Zn https://doc.elabftw.net/postinstall.html\n\n
@@ -622,7 +630,7 @@ fi
 
 # available commands
 declare -A commands
-for valid in access-logs backup bugreport error-logs help info infos install logs mysql mysql-backup self-update start status stop refresh restart uninstall update upgrade usage version
+for valid in access-logs backup bugreport error-logs help info infos initialize install logs mysql mysql-backup self-update start status stop refresh restart uninstall update upgrade usage version
 do
     commands[$valid]=1
 done
