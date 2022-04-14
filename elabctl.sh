@@ -357,7 +357,7 @@ function install
         \Z1====>\Zn https://doc.elabftw.net/postinstall.html\n\n
         The configuration file for docker-compose is here: \Z4$CONF_FILE\Zn\n
         Your data folder is: \Z4${DATA_DIR}\Zn. It contains the MySQL database and uploaded files.\n
-        You can use 'docker logs -f elabftw' to follow the starting up of the container.\n" 20 80
+        You can use 'docker logs -f ${ELAB_WEB_CONTAINER_NAME}' to follow the starting up of the container.\n" 20 80
     fi
 
 }
