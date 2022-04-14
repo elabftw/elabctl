@@ -389,7 +389,7 @@ function is-installed
 {
     if [ ! -f $CONF_FILE ]; then
         echo "###### ERROR ##########################################################"
-        echo "Configuration file (${CONF_FILE})  could not be found!"
+        echo "Configuration file (${CONF_FILE}) could not be found!"
         echo "Did you run the install command?"
         echo "#######################################################################"
         exit 1
