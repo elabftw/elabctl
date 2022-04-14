@@ -323,8 +323,10 @@ function install
     sed -i -e "s/container_name: mysql/container_name: ${ELAB_MYSQL_CONTAINER_NAME}/" $TMP_CONF_FILE
 
     # disable https
-    if [ $usehttps = 0 ]; then
+    scheme="https://"
+    if [ $usehttps -eq 0 ]; then
         sed -i -e "s/DISABLE_HTTPS=false/DISABLE_HTTPS=true/" $TMP_CONF_FILE
+        scheme="http://"
     fi
 
     # enable letsencrypt
@@ -333,6 +335,8 @@ function install
         sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" $TMP_CONF_FILE
         sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" $TMP_CONF_FILE
     fi
+
+    sed -i -e "s/SITE_URL=/SITE_URL=$scheme$servername/" $TMP_CONF_FILE
 
     sleep 1
 
