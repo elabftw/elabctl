@@ -1,5 +1,12 @@
 # Changelog for elabctl
 
+## Version 2.4.0
+
+* Add convenience function `initialize` to import the database structure
+* Populate SITE_URL in elabftw.yml form user input
+* Use container names from elabctl.conf in elabftw.yml
+* `uninstall` also removes mysql:8.0
+
 ## Version 2.3.4
 
 * Remove `--column-statistics=0` to mysqldump command. See https://github.com/elabftw/elabctl/issues/23
