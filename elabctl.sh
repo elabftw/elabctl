@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='2.3.4'
+declare -r ELABCTL_VERSION='2.4.0'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -162,6 +162,7 @@ function help
         error-logs      Show last lines of webserver error log
         help            Show this text
         info            Display the configuration variables and status
+        initialize      Initialize the MySQL database for eLabFTW
         install         Configure and install required components
         logs            Show logs of the containers
         mysql           Open a MySQL prompt in the 'mysql' container
@@ -187,6 +188,12 @@ function info
     echo ""
     echo "Status:"
     status
+}
+
+function initialize
+{
+    is-installed
+    docker exec -it "${ELAB_WEB_CONTAINER_NAME}" bin/install start
 }
 
 # install pip and docker-compose, get elabftw.yml and configure it with sed
@@ -319,10 +326,14 @@ function install
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Adjusting configuration" 20 80
     sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$servername/" $TMP_CONF_FILE
     sed -i -e "s:/var/elabftw:${DATA_DIR}:" $TMP_CONF_FILE
+    sed -i -e "s/container_name: elabftw/container_name: ${ELAB_WEB_CONTAINER_NAME}/" $TMP_CONF_FILE
+    sed -i -e "s/container_name: mysql/container_name: ${ELAB_MYSQL_CONTAINER_NAME}/" $TMP_CONF_FILE
 
     # disable https
-    if [ $usehttps = 0 ]; then
+    scheme="https://"
+    if [ $usehttps -eq 0 ]; then
         sed -i -e "s/DISABLE_HTTPS=false/DISABLE_HTTPS=true/" $TMP_CONF_FILE
+        scheme="http://"
     fi
 
     # enable letsencrypt
@@ -331,6 +342,8 @@ function install
         sed -i -e "s:ENABLE_LETSENCRYPT=false:ENABLE_LETSENCRYPT=true:" $TMP_CONF_FILE
         sed -i -e "s:#- /etc/letsencrypt:- /etc/letsencrypt:" $TMP_CONF_FILE
     fi
+
+    sed -i -e "s#SITE_URL=#SITE_URL=$scheme$servername#" $TMP_CONF_FILE
 
     sleep 1
 
@@ -346,12 +359,13 @@ function install
         dialog --colors --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
         \Z1====>\Zn Finish the installation by configuring TLS certificates.\n\n
         \Z1====>\Zn Then start the containers with: \Zb\Z4elabctl start\Zn\n\n
+        \Z1====>\Zn Then import the database structure with: \Zb\Z4elabctl initialize\Zn\n\n
         \Z1====>\Zn Go to https://$servername once started!\n\n
         In the mean time, check out what to do after an install:\n
         \Z1====>\Zn https://doc.elabftw.net/postinstall.html\n\n
         The configuration file for docker-compose is here: \Z4$CONF_FILE\Zn\n
         Your data folder is: \Z4${DATA_DIR}\Zn. It contains the MySQL database and uploaded files.\n
-        You can use 'docker logs -f elabftw' to follow the starting up of the container.\n" 20 80
+        You can use 'docker logs -f ${ELAB_WEB_CONTAINER_NAME}' to follow the starting up of the container.\n" 20 80
     fi
 
 }
@@ -383,7 +397,7 @@ function is-installed
 {
     if [ ! -f $CONF_FILE ]; then
         echo "###### ERROR ##########################################################"
-        echo "Configuration file (${CONF_FILE})  could not be found!"
+        echo "Configuration file (${CONF_FILE}) could not be found!"
         echo "Did you run the install command?"
         echo "#######################################################################"
         exit 1
@@ -524,6 +538,7 @@ function uninstall
     # remove docker images
     docker rmi elabftw/elabimg || true
     docker rmi mysql:5.7 || true
+    docker rmi mysql:8.0 || true
 
     echo ""
     echo "[✓] Everything has been obliterated. Have a nice day :)"
@@ -615,7 +630,7 @@ fi
 
 # available commands
 declare -A commands
-for valid in access-logs backup bugreport error-logs help info infos install logs mysql mysql-backup self-update start status stop refresh restart uninstall update upgrade usage version
+for valid in access-logs backup bugreport error-logs help info infos initialize install logs mysql mysql-backup self-update start status stop refresh restart uninstall update upgrade usage version
 do
     commands[$valid]=1
 done
