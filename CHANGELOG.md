@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 3.0.0
+
+* Use borg backup for the backup function -> requires change in configuration to work properly!
+
 ## Version 2.4.0
 
 * Add convenience function `initialize` to import the database structure

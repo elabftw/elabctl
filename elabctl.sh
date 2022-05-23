@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # https://www.elabftw.net
-declare -r ELABCTL_VERSION='2.4.0'
+# https://github.com/elabftw/elabctl/
+# © 2022 Nicolas CARPi @ Deltablot
+# License: GPLv3
+declare -r ELABCTL_VERSION='3.0.0'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -35,37 +38,22 @@ function ascii
     echo ""
 }
 
-# create a mysqldump and a zip archive of the uploaded files
+# create a mysqldump and a borg snapshot of the uploaded files
 function backup
 {
-    echo "Using backup directory $BACKUP_DIR"
+    mysql-backup
+    borg-backup
+}
 
-    if ! ls -A "${BACKUP_DIR}" > /dev/null 2>&1; then
-        mkdir -pv "${BACKUP_DIR}"
-        if [ $? -eq 1 ]; then
-            sudo mkdir -pv ${BACKUP_DIR}
-        fi
-    fi
-
-    set -e
-
-    # get clean date
-    local -r date=$(date --iso-8601) # 2016-02-10
-    local -r zipfile="${BACKUP_DIR}/uploaded_files-${date}.zip"
-    local -r dumpfile="${BACKUP_DIR}/mysql_dump-${date}.sql"
-
-    # dump sql
-    docker exec "${ELAB_MYSQL_CONTAINER_NAME}" bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -r dump.sql --no-tablespaces $MYSQL_DATABASE 2>&1 | grep -v "Warning: Using a password"' || echo ">> Containers must be running to do the backup!"
-    # copy it from the container to the host
-    docker cp "${ELAB_MYSQL_CONTAINER_NAME}":dump.sql "$dumpfile"
-    # compress it to the max
-    gzip -f --best "$dumpfile"
-    # make a zip of the uploads folder
-    zip -rq "$zipfile" ${DATA_DIR}/web -x ${DATA_DIR}/web/tmp\*
-    # add the config file
-    zip -rq "$zipfile" $CONF_FILE
-
-    echo "Done. Copy ${BACKUP_DIR} over to another computer."
+function borg-backup
+{
+    set -eu
+    # add these into env so it is picked up by borg
+    export BORG_REPO="${BORG_REPO}"
+    export BORG_PASSPHRASE="${BORG_PASSPHRASE}"
+    # we add to the borg the uploaded files (web directory) and also the backup dir containing dumps of MySQL
+    "${BORG_PATH}" create "::$(hostname)-$(date +%F_%H-%M)" "${DATA_DIR}/web" "${BACKUP_DIR}"
+    "${BORG_PATH}" prune --keep-daily="${BORG_KEEP_DAILY:-14}" --keep-monthly="${BORG_KEEP_MONTHLY:-6}"
 }
 
 # generate info for reporting a bug
@@ -158,6 +146,7 @@ function help
 
         access-logs     Show last lines of webserver access log
         backup          Backup your installation
+        borg-backup     Backup the files with borgbackup
         bugreport       Gather information about the system for a bug report
         error-logs      Show last lines of webserver error log
         help            Show this text
@@ -630,7 +619,7 @@ fi
 
 # available commands
 declare -A commands
-for valid in access-logs backup bugreport error-logs help info infos initialize install logs mysql mysql-backup self-update start status stop refresh restart uninstall update upgrade usage version
+for valid in access-logs backup borg-backup bugreport error-logs help info infos initialize install logs mysql mysql-backup self-update start status stop refresh restart uninstall update upgrade usage version
 do
     commands[$valid]=1
 done
