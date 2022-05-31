@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='3.0.0'
+declare -r ELABCTL_VERSION='3.1.0'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -417,7 +417,7 @@ function mysql-backup
     set -e
 
     # get clean date
-    local -r date=$(date --iso-8601) # 2016-02-10
+    local -r date=$(date +%Y-%m-%d_%H-%M-%S) # 2016-02-10_20-12-45
     local -r dumpfile="${BACKUP_DIR}/mysql_dump-${date}.sql"
 
     # dump sql

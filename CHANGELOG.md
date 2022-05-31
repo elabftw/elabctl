@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 3.1.0
+
+* Add hours, minutes and seconds to the mysql dump filename
+
 ## Version 3.0.0
 
 * Use borg backup for the backup function -> requires change in configuration to work properly!
