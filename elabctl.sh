@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='3.1.0'
+declare -r ELABCTL_VERSION='3.1.1'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -81,7 +81,7 @@ function checkDeps
 {
     need_to_quit=0
 
-    for bin in dialog docker-compose git zip curl sudo
+    for bin in dialog docker-compose curl sudo
     do
         if ! hash "$bin" 2>/dev/null; then
             echo "Error: $bin not found in the \$PATH. Please install the program '$bin' or fix your \$PATH."

@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 3.1.1
+
+* Remove initial check for zip and git presence as they are not required
+
 ## Version 3.1.0
 
 * Add hours, minutes and seconds to the mysql dump filename
