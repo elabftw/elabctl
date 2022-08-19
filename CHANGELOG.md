@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 3.1.2
+
+* Don't check initially for docker-compose presence as we can use "docker compose". Instead check for "docker" command presence.
+
 ## Version 3.1.1
 
 * Remove initial check for zip and git presence as they are not required
