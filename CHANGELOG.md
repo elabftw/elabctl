@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 3.2.1
+
+* Improve detection of docker-compose/docker compose command.
+
 ## Version 3.2.0
 
 * Remove check for beta version as it could never be true because latest release endpoint of github api doesn't include pre-releases.

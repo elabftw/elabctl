@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='3.2.0'
+declare -r ELABCTL_VERSION='3.2.1'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -419,9 +419,8 @@ function restart
 # determine if we use "docker compose" or "docker-compose"
 function select-dc-cmd
 {
-    # get the major version number
-    docker_version=$(docker version|grep -m 1 Version|awk '{print $2}'|awk -F . '{print $1}')
-    if [ "$docker_version" -lt 21 ]; then
+    if hash docker-compose > /dev/null 2>&1; then
+        echo "Info: using 'docker-compose' command instead of 'docker compose' plugin command"
         export DC="docker-compose"
     fi
 }
@@ -604,10 +603,10 @@ if [[ ${commands[$1]} ]]; then
     # exit if variable isn't set
     set -u
     ascii
-    echo "Using elabctl configuration file: $ELABCTL_CONF_FILE"
-    echo "Using elabftw configuration file: $CONF_FILE"
-    echo "---------------------------------------------"
+    echo "Info: using elabctl configuration file: $ELABCTL_CONF_FILE"
+    echo "Info: using elabftw configuration file: $CONF_FILE"
     select-dc-cmd
+    echo "---------------------------------------------"
     $1
 else
     help
