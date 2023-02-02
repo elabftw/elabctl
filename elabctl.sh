@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='3.2.1'
+declare -r ELABCTL_VERSION='3.2.2'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -182,7 +182,7 @@ function info
 function initialize
 {
     is-installed
-    docker exec -it "${ELAB_WEB_CONTAINER_NAME}" bin/install start
+    docker exec -it "${ELAB_WEB_CONTAINER_NAME}" bin/console db:install
 }
 
 # install pip and docker-compose, get elabftw.yml and configure it with sed
