@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='3.2.2'
+declare -r ELABCTL_VERSION='3.3.0'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -144,27 +144,28 @@ function help
 
     Commands:
 
-        access-logs     Show last lines of webserver access log
-        backup          Backup your installation
-        borg-backup     Backup the files with borgbackup
-        bugreport       Gather information about the system for a bug report
-        error-logs      Show last lines of webserver error log
-        help            Show this text
-        info            Display the configuration variables and status
-        initialize      Initialize the MySQL database for eLabFTW
-        install         Configure and install required components
-        logs            Show logs of the containers
-        mysql           Open a MySQL prompt in the 'mysql' container
-        mysql-backup    Make a MySQL dump file for backup
-        refresh         Recreate the containers if they need to be
-        restart         Restart the containers
-        self-update     Update the elabctl script
-        status          Show status of running containers
-        start           Start the containers
-        stop            Stop the containers
-        uninstall       Uninstall eLabFTW and purge data
-        update          Get the latest version of the containers
-        version         Display elabctl version
+        access-logs         Show last lines of webserver access log
+        backup              Backup your installation
+        borg-backup         Backup the files with borgbackup
+        bugreport           Gather information about the system for a bug report
+        error-logs          Show last lines of webserver error log
+        help                Show this text
+        info                Display the configuration variables and status
+        initialize          Initialize the MySQL database for eLabFTW
+        install             Configure and install required components
+        logs                Show logs of the containers
+        mysql               Open a MySQL prompt in the 'mysql' container
+        mysql-backup        Make a MySQL dump file for backup
+        refresh             Recreate the containers if they need to be
+        restart             Restart the containers
+        self-update         Update the elabctl script
+        status              Show status of running containers
+        start               Start the containers
+        stop                Stop the containers
+        uninstall           Uninstall eLabFTW and purge data
+        update              Get the latest version of the containers
+        update-db-schema    Update the MySQL database schema
+        version             Display elabctl version
     "
 }
 
@@ -521,9 +522,22 @@ function update
     fi
     eval "$DC" -f "$CONF_FILE" pull
     restart
+
+    echo "Do you want to update the MySQL database schema? (recommended) (y/N)"
+    read -r doDbUpdate
+    if [ "$doDbUpdate" = "y" ]; then
+        update-db-schema
+    fi
+
     echo "Your are now running the latest eLabFTW version."
     echo "Make sure to read the CHANGELOG!"
     echo "=> https://github.com/elabftw/elabftw/releases/latest"
+}
+
+function update-db-schema
+{
+    is-installed
+    docker exec -it "${ELAB_WEB_CONTAINER_NAME}" bin/console db:update
 }
 
 function upgrade
@@ -594,7 +608,7 @@ fi
 
 # available commands
 declare -A commands
-for valid in access-logs backup borg-backup bugreport error-logs help info infos initialize install logs mysql mysql-backup self-update start status stop refresh restart uninstall update upgrade usage version
+for valid in access-logs backup borg-backup bugreport error-logs help info infos initialize install logs mysql mysql-backup self-update start status stop refresh restart uninstall update update-db-schema upgrade usage version
 do
     commands[$valid]=1
 done

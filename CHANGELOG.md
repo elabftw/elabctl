@@ -1,5 +1,10 @@
 # Changelog for elabctl
 
+## Version 3.3.0
+
+* Add convenience function `update-db-schema` which will update the MySQL database schema.
+* Use new function when running `update`.
+
 ## Version 3.2.1
 
 * Improve detection of docker-compose/docker compose command.
