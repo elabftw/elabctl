@@ -523,7 +523,7 @@ function update
     eval "$DC" -f "$CONF_FILE" pull
     restart
 
-    echo "Do you want to update the MySQL database schema? (y/N)"
+    echo "Do you want to update the MySQL database schema? (recommended) (y/N)"
     read -r doDbUpdate
     if [ "$doDbUpdate" = "y" ]; then
         update-db-schema
@@ -608,7 +608,7 @@ fi
 
 # available commands
 declare -A commands
-for valid in access-logs backup borg-backup bugreport error-logs help info infos initialize install logs mysql mysql-backup self-update start status stop refresh restart uninstall update upgrade usage version
+for valid in access-logs backup borg-backup bugreport error-logs help info infos initialize install logs mysql mysql-backup self-update start status stop refresh restart uninstall update update-db-schema upgrade usage version
 do
     commands[$valid]=1
 done
