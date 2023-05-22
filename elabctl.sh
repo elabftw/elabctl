@@ -7,6 +7,10 @@ declare -r ELABCTL_VERSION='3.3.0'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
+
+# defines the time until older mysql dumps will be deleted (+0 = older than 24h, +1 = older than 48h and so on)
+declare DUMP_DELETE_DAYS=+0
+
 # default config file for docker-compose
 declare CONF_FILE='/etc/elabftw.yml'
 declare TMP_CONF_FILE='/tmp/elabftw.yml'
@@ -404,6 +408,8 @@ function mysql-backup
     docker cp "${ELAB_MYSQL_CONTAINER_NAME}:dump.sql" "$dumpfile"
     # compress it to the max
     gzip -f --best "$dumpfile"
+    # delete old dumps
+    find ${BACKUP_DIR} -mindepth 1 -name '*.sql.gz' -ctime ${DUMP_DELETE_DAYS} -delete
 }
 
 function refresh
