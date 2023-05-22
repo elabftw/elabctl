@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 3.4.0
+
+* Add `DUMP_DELETE_DAYS` variable (defaults to +0) to remove old mysql backup files after generating a dump (fix elabftw/elabftw#4285)
+
 ## Version 3.3.0
 
 * Add convenience function `update-db-schema` which will update the MySQL database schema.

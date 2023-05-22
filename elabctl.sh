@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='3.3.0'
+declare -r ELABCTL_VERSION='3.4.0'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -386,7 +386,7 @@ function mysql
     docker exec -it "${ELAB_MYSQL_CONTAINER_NAME}" bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE'
 }
 
-# create a mysqldump and a zip archive of the uploaded files
+# create a mysqldump and remove old backups
 function mysql-backup
 {
     if ! ls -A "${BACKUP_DIR}" > /dev/null 2>&1; then
