@@ -409,7 +409,9 @@ function mysql-backup
     # compress it to the max
     gzip -f --best "$dumpfile"
     # delete old dumps
-    find ${BACKUP_DIR} -mindepth 1 -name '*.sql.gz' -ctime ${DUMP_DELETE_DAYS} -delete
+    if [[ "${DUMP_DELETE_DAYS}" != "disabled" ]]; then
+        find ${BACKUP_DIR} -mindepth 1 -name '*.sql.gz' -ctime ${DUMP_DELETE_DAYS} -delete
+    fi
 }
 
 function refresh
