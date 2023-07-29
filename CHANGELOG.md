@@ -1,5 +1,10 @@
 # Changelog for elabctl
 
+## Version 3.5.0
+
+* Change `bin/console db:install` to new `bin/init db:install`
+* Reword the `update` help text
+
 ## Version 3.4.0
 
 * Add `DUMP_DELETE_DAYS` variable (defaults to +0) to remove old mysql backup files after generating a dump (fix elabftw/elabftw#4285)

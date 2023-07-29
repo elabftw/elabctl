@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='3.4.0'
+declare -r ELABCTL_VERSION='3.5.0'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -167,7 +167,7 @@ function help
         start               Start the containers
         stop                Stop the containers
         uninstall           Uninstall eLabFTW and purge data
-        update              Get the latest version of the containers
+        update              Pull the image defined, restart containers and update database schema
         update-db-schema    Update the MySQL database schema
         version             Display elabctl version
     "
@@ -187,7 +187,7 @@ function info
 function initialize
 {
     is-installed
-    docker exec -it "${ELAB_WEB_CONTAINER_NAME}" bin/console db:install
+    docker exec -it "${ELAB_WEB_CONTAINER_NAME}" bin/init db:install
 }
 
 # install pip and docker-compose, get elabftw.yml and configure it with sed
