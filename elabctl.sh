@@ -428,7 +428,10 @@ function restart
 # determine if we use "docker compose" or "docker-compose"
 function select-dc-cmd
 {
-    if hash docker-compose > /dev/null 2>&1; then
+    docker compose version > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        export DC="docker compose"
+    elif hash docker-compose > /dev/null 2>&1; then
         echo "Info: using 'docker-compose' command instead of 'docker compose' plugin command"
         export DC="docker-compose"
     fi
