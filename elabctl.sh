@@ -537,7 +537,7 @@ function update
         update-db-schema
     fi
 
-    echo "Your are now running the latest eLabFTW version."
+    echo "You are now running the latest eLabFTW version."
     echo "Make sure to read the CHANGELOG!"
     echo "=> https://github.com/elabftw/elabftw/releases/latest"
 }
