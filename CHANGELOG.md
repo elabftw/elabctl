@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 3.6.0
+
+* Allow setting `BORG_REMOTE_PATH` env var for `borg` backup. (fix elabftw/elabftw#4798)
+
 ## Version 3.5.0
 
 * Change `bin/console db:install` to new `bin/init db:install`
