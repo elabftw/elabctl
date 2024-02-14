@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 3.6.1
+
+* Add `--default-character-set=utf8mb4` to `elabctl mysql` command
+
 ## Version 3.6.0
 
 * Allow setting `BORG_REMOTE_PATH` env var for `borg` backup. (fix elabftw/elabftw#4798)
