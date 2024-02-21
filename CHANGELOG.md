@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 3.6.2
+
+* Prevent issue with unset `BORG_REMOTE_PATH` env. Fix #36.
+
 ## Version 3.6.1
 
 * Add `--default-character-set=utf8mb4` to `elabctl mysql` command

@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='3.6.1'
+declare -r ELABCTL_VERSION='3.6.2'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -55,7 +55,7 @@ function borg-backup
     # add these into env so it is picked up by borg
     export BORG_REPO="${BORG_REPO}"
     export BORG_PASSPHRASE="${BORG_PASSPHRASE}"
-    if [ -n "$BORG_REMOTE_PATH" ]; then
+    if [[ -v BORG_REMOTE_PATH ]]; then
         export BORG_REMOTE_PATH="${BORG_REMOTE_PATH}"
     fi
     # we add to the borg the uploaded files (web directory) and also the backup dir containing dumps of MySQL
