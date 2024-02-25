@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='3.6.2'
+declare -r ELABCTL_VERSION='3.6.3'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -548,6 +548,9 @@ function update
 function update-db-schema
 {
     is-installed
+    echo "Waiting 15 seconds for the container to start before running update..."
+    sleep 15
+    echo "Running command 'bin/console db:update' in the container now"
     docker exec -it "${ELAB_WEB_CONTAINER_NAME}" bin/console db:update
 }
 

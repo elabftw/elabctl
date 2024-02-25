@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 3.6.3
+
+* Add timeout before update command. See elabftw/elabftw#4948.
+
 ## Version 3.6.2
 
 * Prevent issue with unset `BORG_REMOTE_PATH` env. Fix #36.
