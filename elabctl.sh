@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='3.6.3'
+declare -r ELABCTL_VERSION='3.6.4'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -13,7 +13,8 @@ declare DUMP_DELETE_DAYS=+0
 
 # default config file for docker-compose
 declare CONF_FILE='/etc/elabftw.yml'
-declare TMP_CONF_FILE='/tmp/elabftw.yml'
+declare TMP_DIR=$(mktemp -d)
+declare TMP_CONF_FILE="${TMP_DIR}/elabftw.yml"
 # default data directory
 declare DATA_DIR='/var/elabftw'
 
@@ -440,10 +441,11 @@ function select-dc-cmd
 function self-update
 {
     me=$(command -v "$0")
-    echo "Downloading new version to /tmp/elabctl"
-    curl -sL https://raw.githubusercontent.com/elabftw/elabctl/master/elabctl.sh -o /tmp/elabctl
-    chmod -v +x /tmp/elabctl
-    mv -v /tmp/elabctl "$me"
+    tmp_filepath="${TMP_DIR}/elabctl"
+    echo "Downloading new version to $tmp_filepath"
+    curl -sL https://raw.githubusercontent.com/elabftw/elabctl/master/elabctl.sh -o "$tmp_filepath"
+    chmod -v +x "$tmp_filepath"
+    mv -v "$tmp_filepath" "$me"
 }
 
 function start
