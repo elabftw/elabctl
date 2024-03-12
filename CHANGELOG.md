@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 5.0.1
+
+* Do a refresh (``docker compose up -d``) instead of a restart after update
+
 ## Version 5.0.0
 
 The major version bump is simply to align with the rest of the elabftw related repositories, it has no other meaning.

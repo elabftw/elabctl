@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='5.0.0'
+declare -r ELABCTL_VERSION='5.0.1'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -534,7 +534,7 @@ function update
         echo "Backup done, now updating."
     fi
     eval "$DC" -f "$CONF_FILE" pull
-    restart
+    refresh
 
     echo "Do you want to update the MySQL database schema? (recommended) (y/N)"
     read -r doDbUpdate
