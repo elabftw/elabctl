@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='3.6.4'
+declare -r ELABCTL_VERSION='5.0.0'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -550,9 +550,12 @@ function update
 function update-db-schema
 {
     is-installed
-    echo "Waiting 15 seconds for the container to start before running update..."
-    sleep 15
-    echo "Running command 'bin/console db:update' in the container now"
+    # wait for mysql container to start, but only if there is one
+    if [ "$(docker ps | grep ${ELAB_MYSQL_CONTAINER_NAME})" ]; then
+        echo -n "Waiting for the MySQL container to be ready before running update..."
+        while [ "$(docker inspect -f {{.State.Health.Status}} ${ELAB_MYSQL_CONTAINER_NAME})" != "healthy" ]; do echo -n .; sleep 2; done; echo
+    fi
+    echo "Running command 'bin/console db:update' in the eLabFTW container now"
     docker exec -it "${ELAB_WEB_CONTAINER_NAME}" bin/console db:update
 }
 

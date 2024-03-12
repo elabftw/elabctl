@@ -1,5 +1,11 @@
 # Changelog for elabctl
 
+## Version 5.0.0
+
+The major version bump is simply to align with the rest of the elabftw related repositories, it has no other meaning.
+
+* Actually check for healthy state of MySQL container rather than wait 15 seconds before running db update. See elabftw/elabftw#4948.
+
 ## Version 3.6.4
 
 * Use `mktemp` command to create temporary directory to write temporary files to, without another user being able to read or modify it.
