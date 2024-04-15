@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='5.0.2'
+declare -r ELABCTL_VERSION='5.0.3'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -13,8 +13,6 @@ declare DUMP_DELETE_DAYS=+0
 
 # default config file for docker-compose
 declare CONF_FILE='/etc/elabftw.yml'
-declare TMP_DIR=$(mktemp -d)
-declare TMP_CONF_FILE="${TMP_DIR}/elabftw.yml"
 # default data directory
 declare DATA_DIR='/var/elabftw'
 
@@ -245,6 +243,9 @@ function install
         sudo mkdir -pv $DATA_DIR
     fi
 
+    declare TMP_DIR=$(mktemp -d)
+    declare TMP_CONF_FILE="${TMP_DIR}/elabftw.yml"
+
     if [ "$unattended" -eq 0 ]; then
         set +e
         ########################################################################
@@ -352,6 +353,8 @@ function install
     # use sudo in case it's in /etc and we are not root
     sudo mv "$TMP_CONF_FILE" "$CONF_FILE"
 
+    rmdir -v ${TMP_DIR}
+
     # final screen
     if [ "$unattended" -eq 0 ]; then
         dialog --colors --backtitle "$backtitle" --title "Installation finished" --msgbox "\nCongratulations, eLabFTW was successfully installed! :)\n\n
@@ -441,6 +444,7 @@ function select-dc-cmd
 function self-update
 {
     me=$(command -v "$0")
+    TMP_DIR=$(mktemp -d)
     tmp_filepath="${TMP_DIR}/elabctl"
     echo "Downloading new version to $tmp_filepath"
     curl -sL https://raw.githubusercontent.com/elabftw/elabctl/master/elabctl.sh -o "$tmp_filepath"

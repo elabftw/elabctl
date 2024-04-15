@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 5.0.3
+
+* Properly address #37 by only creating a tmp dir during install or sef-update
+
 ## Version 5.0.2
 
 * Cleanup tmp dir created during `self-update` function. fix #37
