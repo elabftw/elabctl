@@ -1,5 +1,9 @@
 # Changelog for elabctl
 
+## Version 5.0.2
+
+* Cleanup tmp dir created during `self-update` function. fix #37
+
 ## Version 5.0.1
 
 * Do a refresh (``docker compose up -d``) instead of a restart after update

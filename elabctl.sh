@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='5.0.1'
+declare -r ELABCTL_VERSION='5.0.2'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -446,6 +446,7 @@ function self-update
     curl -sL https://raw.githubusercontent.com/elabftw/elabctl/master/elabctl.sh -o "$tmp_filepath"
     chmod -v +x "$tmp_filepath"
     mv -v "$tmp_filepath" "$me"
+    rmdir -v ${TMP_DIR}
 }
 
 function start
