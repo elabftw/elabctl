@@ -558,7 +558,22 @@ function update-db-schema
     # wait for mysql container to start, but only if there is one
     if [ "$(docker ps | grep ${ELAB_MYSQL_CONTAINER_NAME})" ]; then
         echo -n "Waiting for the MySQL container to be ready before running update..."
-        while [ "$(docker inspect -f {{.State.Health.Status}} ${ELAB_MYSQL_CONTAINER_NAME})" != "healthy" ]; do echo -n .; sleep 2; done; echo
+        while true; do
+            # check if healthcheck is available or else will crash (e.g with older versions of elabFTW config files)
+            health_status=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' ${ELAB_MYSQL_CONTAINER_NAME})
+            if [ "$health_status" == "healthy" ]; then
+                echo
+                break
+            fi
+            if [ "$health_status" == "no-healthcheck" ]; then
+                echo -e "\nNo healthcheck found. Waiting for 20 seconds as fallback..."
+                sleep 20
+                break
+            fi
+            # wait and retry while showing user activity
+            echo -n .
+            sleep 2
+        done
     fi
     echo "Running command 'bin/console db:update' in the eLabFTW container now"
     docker exec -it "${ELAB_WEB_CONTAINER_NAME}" bin/console db:update
