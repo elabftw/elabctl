@@ -562,7 +562,6 @@ function update-db-schema
             # check if healthcheck is available or else will crash (e.g with older versions of elabFTW config files)
             health_status=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' ${ELAB_MYSQL_CONTAINER_NAME})
             if [ "$health_status" == "healthy" ]; then
-                echo
                 break
             fi
             if [ "$health_status" == "no-healthcheck" ]; then
