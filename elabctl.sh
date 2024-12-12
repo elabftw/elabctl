@@ -556,11 +556,11 @@ function update-db-schema
 {
     is-installed
     # wait for mysql container to start, but only if there is one
-    if [ "$(docker ps | grep ${ELAB_MYSQL_CONTAINER_NAME})" ]; then
+    if docker ps | grep -q "${ELAB_MYSQL_CONTAINER_NAME}"; then
         echo -n "Waiting for the MySQL container to be ready before running update..."
         while true; do
-            # check if healthcheck is available or else will crash (e.g with older versions of elabFTW config files)
-            health_status=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' ${ELAB_MYSQL_CONTAINER_NAME})
+            # check if healthcheck is available or else will crash (e.g. with older versions of elabFTW config files)
+            health_status=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' "${ELAB_MYSQL_CONTAINER_NAME}")
             if [ "$health_status" == "healthy" ]; then
                 break
             fi
