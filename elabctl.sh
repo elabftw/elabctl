@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='5.0.3'
+declare -r ELABCTL_VERSION='5.0.4'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
