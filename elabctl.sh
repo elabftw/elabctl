@@ -23,6 +23,9 @@ declare ELABCTL_CONF_FILE="using default values (no config file found)"
 # will be overridden by select-dc-cmd()
 declare DC="docker compose"
 
+# allow override default web subfolder in data dir
+declare UPLOADS_DIR="${DATA_DIR}/web"
+
 function access-logs
 {
     docker logs "${ELAB_WEB_CONTAINER_NAME}" 2>/dev/null
@@ -58,7 +61,7 @@ function borg-backup
         export BORG_REMOTE_PATH="${BORG_REMOTE_PATH}"
     fi
     # we add to the borg the uploaded files (web directory) and also the backup dir containing dumps of MySQL
-    "${BORG_PATH}" create "::$(hostname)-$(date +%F_%H-%M)" "${DATA_DIR}/web" "${BACKUP_DIR}"
+    "${BORG_PATH}" create "::$(hostname)-$(date +%F_%H-%M)" "${UPLOADS_DIR}" "${BACKUP_DIR}"
     "${BORG_PATH}" prune --keep-daily="${BORG_KEEP_DAILY:-14}" --keep-monthly="${BORG_KEEP_MONTHLY:-6}"
 }
 
