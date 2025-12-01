@@ -15,6 +15,8 @@ declare DUMP_DELETE_DAYS=+0
 declare CONF_FILE='/etc/elabftw.yml'
 # default data directory
 declare DATA_DIR='/var/elabftw'
+# allow override default web subfolder in data dir
+declare UPLOAD_DIR="${DATA_DIR}/web"
 
 # default conf file is no conf file
 declare ELABCTL_CONF_FILE="using default values (no config file found)"
@@ -58,7 +60,7 @@ function borg-backup
         export BORG_REMOTE_PATH="${BORG_REMOTE_PATH}"
     fi
     # we add to the borg the uploaded files (web directory) and also the backup dir containing dumps of MySQL
-    "${BORG_PATH}" create "::$(hostname)-$(date +%F_%H-%M)" "${DATA_DIR}/web" "${BACKUP_DIR}"
+    "${BORG_PATH}" create "::$(hostname)-$(date +%F_%H-%M)" "${UPLOAD_DIR}" "${BACKUP_DIR}"
     "${BORG_PATH}" prune --keep-daily="${BORG_KEEP_DAILY:-14}" --keep-monthly="${BORG_KEEP_MONTHLY:-6}"
 }
 
@@ -179,6 +181,7 @@ function info
 {
     echo "Backup directory: ${BACKUP_DIR}"
     echo "Data directory: ${DATA_DIR}"
+    echo "Upload directory: ${UPLOAD_DIR}"
     echo "Web container name: ${ELAB_WEB_CONTAINER_NAME}"
     echo "MySQL container name: ${ELAB_MYSQL_CONTAINER_NAME}"
     echo ""
@@ -228,7 +231,8 @@ function install
 
         dialog --colors --backtitle "$backtitle" --title "$title" --yes-label "Looks good to me" --no-label "Download example conf and quit" --yesno "\nHere is what will happen:\n
         The main configuration file will be created at: \Z4${CONF_FILE}\Zn\n
-        A directory holding elabftw data (mysql + uploaded files) will be created at: \Z4${DATA_DIR}\Zn\n
+        A directory holding elabftw MySQL data will be created at: \Z4${DATA_DIR}/mysql\Zn\n
+        A directory holding elabftw uploaded files will be created at: \Z4${UPLOAD_DIR}\Zn\n
         The backups will be created at: \Z4${BACKUP_DIR}\Zn\n\n
         If you wish to change these settings, quit now and edit the file \Z4elabctl.conf\Zn" 0 0
         if [ $? -eq 1 ]; then
@@ -302,12 +306,12 @@ function install
     set -e
 
     echo 40 | dialog --backtitle "$backtitle" --title "$title" --gauge "Creating folder structure. You will be asked for your password (bottom left of the screen)." 20 80
-    sudo mkdir -pv ${DATA_DIR}/{web,mysql}
-    sudo chmod -Rv 700 ${DATA_DIR}
+    sudo mkdir -pv ${DATA_DIR}/mysql ${UPLOAD_DIR}
+    sudo chmod -Rv 700 ${DATA_DIR} ${UPLOAD_DIR}
     echo "Executing: sudo chown -v 999:999 ${DATA_DIR}/mysql"
     sudo chown -v 999:999 ${DATA_DIR}/mysql
-    echo "Executing: sudo chown -v 101:101 ${DATA_DIR}/web"
-    sudo chown -v 101:101 ${DATA_DIR}/web
+    echo "Executing: sudo chown -v 101:101 ${UPLOAD_DIR}"
+    sudo chown -v 101:101 ${UPLOAD_DIR}
     sleep 2
 
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Grabbing the docker-compose configuration file" 20 80
@@ -324,7 +328,7 @@ function install
     # elab config
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Adjusting configuration" 20 80
     sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$servername/" $TMP_CONF_FILE
-    sed -i -e "s:/var/elabftw:${DATA_DIR}:" $TMP_CONF_FILE
+    sed -i -e "s:/var/elabftw/web:${UPLOAD_DIR}:" $TMP_CONF_FILE
     sed -i -e "s/container_name: elabftw/container_name: ${ELAB_WEB_CONTAINER_NAME}/" $TMP_CONF_FILE
     sed -i -e "s/container_name: mysql/container_name: ${ELAB_MYSQL_CONTAINER_NAME}/" $TMP_CONF_FILE
 
@@ -508,6 +512,11 @@ function uninstall
         rm -vf "$CONF_FILE"
         echo "[x] Deleted $CONF_FILE"
     fi
+    # remove uploads directory
+    if [ -d "$UPLOAD_DIR" ]; then
+        sudo rm -rvf "$UPLOAD_DIR"
+        echo "[x] Deleted $UPLOAD_DIR"
+    fi
     # remove data directory
     if [ -d "$DATA_DIR" ]; then
         sudo rm -rvf "$DATA_DIR"
@@ -640,6 +649,13 @@ fi
 # check that the path for the data dir is absolute
 if [ "${DATA_DIR:0:1}" != "/" ]; then
     echo "Error in config file: DATA_DIR is not an absolute path!"
+    echo "Edit elabctl.conf and add a full path to the directory."
+    exit 1
+fi
+
+# check that the path for the upload dir is absolute
+if [ "${UPLOAD_DIR:0:1}" != "/" ]; then
+    echo "Error in config file: UPLOAD_DIR is not an absolute path!"
     echo "Edit elabctl.conf and add a full path to the directory."
     exit 1
 fi
