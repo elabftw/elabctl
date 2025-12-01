@@ -328,7 +328,7 @@ function install
     # elab config
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Adjusting configuration" 20 80
     sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$servername/" $TMP_CONF_FILE
-    sed -i -e "s:/var/elabftw:${DATA_DIR}:" $TMP_CONF_FILE
+    sed -i -e "s:/var/elabftw/web:${UPLOAD_DIR}:" $TMP_CONF_FILE
     sed -i -e "s/container_name: elabftw/container_name: ${ELAB_WEB_CONTAINER_NAME}/" $TMP_CONF_FILE
     sed -i -e "s/container_name: mysql/container_name: ${ELAB_MYSQL_CONTAINER_NAME}/" $TMP_CONF_FILE
 
@@ -512,6 +512,11 @@ function uninstall
         rm -vf "$CONF_FILE"
         echo "[x] Deleted $CONF_FILE"
     fi
+    # remove uploads directory
+    if [ -d "$UPLOAD_DIR" ]; then
+        sudo rm -rvf "$UPLOAD_DIR"
+        echo "[x] Deleted $UPLOAD_DIR"
+    fi
     # remove data directory
     if [ -d "$DATA_DIR" ]; then
         sudo rm -rvf "$DATA_DIR"
@@ -644,6 +649,13 @@ fi
 # check that the path for the data dir is absolute
 if [ "${DATA_DIR:0:1}" != "/" ]; then
     echo "Error in config file: DATA_DIR is not an absolute path!"
+    echo "Edit elabctl.conf and add a full path to the directory."
+    exit 1
+fi
+
+# check that the path for the upload dir is absolute
+if [ "${UPLOAD_DIR:0:1}" != "/" ]; then
+    echo "Error in config file: UPLOAD_DIR is not an absolute path!"
     echo "Edit elabctl.conf and add a full path to the directory."
     exit 1
 fi
