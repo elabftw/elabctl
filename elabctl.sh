@@ -56,6 +56,7 @@ function borg-backup
     # add these into env so it is picked up by borg
     export BORG_REPO="${BORG_REPO}"
     export BORG_PASSPHRASE="${BORG_PASSPHRASE}"
+    export BORG_PASSCOMMAND="${BORG_PASSCOMMAND}"
     if [[ -v BORG_REMOTE_PATH ]]; then
         export BORG_REMOTE_PATH="${BORG_REMOTE_PATH}"
     fi
