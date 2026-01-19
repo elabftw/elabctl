@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='5.0.4'
+declare -r ELABCTL_VERSION='5.1.0'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -11,7 +11,7 @@ declare BACKUP_DIR='/var/backups/elabftw'
 # defines the time until older mysql dumps will be deleted (+0 = older than 24h, +1 = older than 48h and so on)
 declare DUMP_DELETE_DAYS=+0
 
-# default config file for docker-compose
+# default config file for docker compose
 declare CONF_FILE='/etc/elabftw.yml'
 # default data directory
 declare DATA_DIR='/var/elabftw'
@@ -21,8 +21,7 @@ declare UPLOAD_DIR="${DATA_DIR}/web"
 # default conf file is no conf file
 declare ELABCTL_CONF_FILE="using default values (no config file found)"
 
-# by default use the new compose command
-# will be overridden by select-dc-cmd()
+# use the new compose command
 declare DC="docker compose"
 
 function access-logs
@@ -105,6 +104,8 @@ function checkDeps
     if [ $need_to_quit -eq 1 ]; then
         exit 1
     fi
+
+    require_docker_compose
 }
 
 function error-logs
@@ -200,7 +201,7 @@ function initialize
     docker exec -it "${ELAB_WEB_CONTAINER_NAME}" bin/init db:install
 }
 
-# install pip and docker-compose, get elabftw.yml and configure it with sed
+# get elabftw.yml and configure it with sed
 function install
 {
     checkDeps
@@ -319,7 +320,7 @@ function install
     sudo chown -v 101:101 ${UPLOAD_DIR}
     sleep 2
 
-    echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Grabbing the docker-compose configuration file" 20 80
+    echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Grabbing the docker compose configuration file" 20 80
     # make a copy of an existing conf file
     if [ -e $CONF_FILE ]; then
         echo 55 | dialog --backtitle "$backtitle" --title "$title" --gauge "Making a copy of the existing configuration file." 20 80
@@ -373,7 +374,7 @@ function install
         \Z1====>\Zn Go to https://$servername once started!\n\n
         In the mean time, check out what to do after an install:\n
         \Z1====>\Zn https://doc.elabftw.net/sysadmin-guide.html#setting-up-email\n\n
-        The configuration file for docker-compose is here: \Z4$CONF_FILE\Zn\n
+        The configuration file for docker compose is here: \Z4$CONF_FILE\Zn\n
         Your data folder is: \Z4${DATA_DIR}\Zn. It contains the MySQL database and uploaded files.\n
         You can use 'docker logs -f ${ELAB_WEB_CONTAINER_NAME}' to follow the starting up of the container.\n" 20 80
     fi
@@ -435,19 +436,19 @@ function refresh
     start
 }
 
+function require_docker_compose {
+  if docker compose version >/dev/null 2>&1; then
+    return 0
+  fi
+
+  echo "ERROR: 'docker compose' is not available (or Docker is not running)." >&2
+  exit 1
+}
+
 function restart
 {
     stop
     start
-}
-
-# determine if we use "docker compose" or "docker-compose"
-function select-dc-cmd
-{
-    if hash docker-compose > /dev/null 2>&1; then
-        echo "Info: using 'docker-compose' command instead of 'docker compose' plugin command"
-        export DC="docker-compose"
-    fi
 }
 
 function self-update
@@ -678,7 +679,6 @@ if [[ ${commands[$1]} ]]; then
     ascii
     echo "Info: using elabctl configuration file: $ELABCTL_CONF_FILE"
     echo "Info: using elabftw configuration file: $CONF_FILE"
-    select-dc-cmd
     echo "---------------------------------------------"
     $1
 else
