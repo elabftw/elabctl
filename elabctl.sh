@@ -3,7 +3,7 @@
 # https://github.com/elabftw/elabctl/
 # © 2022 Nicolas CARPi @ Deltablot
 # License: GPLv3
-declare -r ELABCTL_VERSION='5.0.4'
+declare -r ELABCTL_VERSION='5.0.5'
 
 # default backup dir
 declare BACKUP_DIR='/var/backups/elabftw'
@@ -47,6 +47,7 @@ function ascii
 function backup
 {
     mysql-backup
+    conf-backup
     borg-backup
 }
 
@@ -107,6 +108,32 @@ function checkDeps
     fi
 }
 
+function conf-backup
+{
+    if ! ls -A "${BACKUP_DIR}" > /dev/null 2>&1; then
+        mkdir -pv "${BACKUP_DIR}"
+        if [ $? -eq 1 ]; then
+            sudo mkdir -pv ${BACKUP_DIR}
+        fi
+    fi
+
+    set -e
+
+    # get clean date
+    local -r date=$(date +%Y-%m-%d_%H-%M-%S) # 2016-02-10_20-12-45
+    local -r backup_file="${BACKUP_DIR}/elabftw-${date}.yml"
+
+    # copy configuration
+    echo "Creating Backup of ${CONF_FILE} ..."
+    cp "${CONF_FILE}" "${backup_file}"
+    gzip -f --best "$backup_file"
+
+    # delete old dumps
+    if [[ "${DUMP_DELETE_DAYS}" != "disabled" ]]; then
+        find ${BACKUP_DIR} -mindepth 1 -name '*.yml.gz' -ctime ${DUMP_DELETE_DAYS} -delete
+    fi
+}
+
 function error-logs
 {
     docker logs "${ELAB_WEB_CONTAINER_NAME}" 1>/dev/null
@@ -161,6 +188,7 @@ function help
         backup              Backup your installation
         borg-backup         Backup the files with borgbackup
         bugreport           Gather information about the system for a bug report
+        conf-backup         Copy the configuration file for backup
         error-logs          Show last lines of webserver error log
         help                Show this text
         info                Display the configuration variables and status
@@ -667,7 +695,7 @@ fi
 
 # available commands
 declare -A commands
-for valid in access-logs backup borg-backup bugreport error-logs help info infos initialize install logs mysql mysql-backup self-update start status stop refresh restart uninstall update update-db-schema upgrade usage version
+for valid in access-logs backup borg-backup bugreport conf-backup error-logs help info infos initialize install logs mysql mysql-backup self-update start status stop refresh restart uninstall update update-db-schema upgrade usage version
 do
     commands[$valid]=1
 done
