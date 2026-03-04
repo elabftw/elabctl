@@ -68,7 +68,7 @@ function borg-backup
     "${BORG_PATH}" create "::$(hostname)-$(date +%F_%H-%M)" "${UPLOAD_DIR}" "${BACKUP_DIR}"
     "${BORG_PATH}" prune --keep-daily="${BORG_KEEP_DAILY:-14}" --keep-monthly="${BORG_KEEP_MONTHLY:-6}"
     # run borg compact
-    "${BORG_PATH}" compact "${BACKUP_DIR}/borgbackup"
+    "${BORG_PATH}" compact "${BORG_REPO}"
 }
 
 # generate info for reporting a bug
