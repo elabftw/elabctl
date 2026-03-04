@@ -67,6 +67,8 @@ function borg-backup
     # we add to the borg the uploaded files (web directory) and also the backup dir containing dumps of MySQL
     "${BORG_PATH}" create "::$(hostname)-$(date +%F_%H-%M)" "${UPLOAD_DIR}" "${BACKUP_DIR}"
     "${BORG_PATH}" prune --keep-daily="${BORG_KEEP_DAILY:-14}" --keep-monthly="${BORG_KEEP_MONTHLY:-6}"
+    # run borg compact
+    "${BORG_PATH}" compact "${BACKUP_DIR}/borgbackup"
 }
 
 # generate info for reporting a bug
