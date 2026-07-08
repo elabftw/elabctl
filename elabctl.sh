@@ -636,20 +636,20 @@ declare ELAB_MYSQL_CONTAINER_NAME='mysql'
 
 # Now we load the configuration file for custom directories set by user
 if [ -f /etc/elabctl.conf ]; then
-    source /etc/elabctl.conf
     ELABCTL_CONF_FILE="/etc/elabctl.conf"
+    source "${ELABCTL_CONF_FILE}"
 fi
 
 # elabctl.conf in ~/.config
 if [ -f "${HOME}/.config/elabctl.conf" ]; then
-    source "${HOME}/.config/elabctl.conf"
     ELABCTL_CONF_FILE="${HOME}/.config/elabctl.conf"
+    source "${ELABCTL_CONF_FILE}"
 fi
 
 # if elabctl is in current dir it has top priority
-if [ -f elabctl.conf ]; then
-    source elabctl.conf
-    ELABCTL_CONF_FILE="elabctl.conf"
+if [ -f "./elabctl.conf" ]; then
+    ELABCTL_CONF_FILE="./elabctl.conf"
+    source "${ELABCTL_CONF_FILE}"
 fi
 
 # check that the path for the data dir is absolute
