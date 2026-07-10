@@ -1,3 +1,7 @@
+# This repo has moved!
+
+This script has been included in [https://github.com/elabftw/elabftw](main eLabFTW repository).
+
 # elabctl.sh
 
 This script is used to manage an eLabFTW instance.
